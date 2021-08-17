@@ -19,5 +19,5 @@ Vue.component("switch-button", {
   data: function () {
     return { state: false };
   },
-  template: '<button v-on:click="state=!state"> {{state}}</button>',
+  template: '<button v-on:click="state=!state">  {{state}}</button>',
 });

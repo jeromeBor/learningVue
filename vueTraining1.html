@@ -1,57 +1,111 @@
 <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://unpkg.com/vue/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v5.3.0/build/ol.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/vuelayers/lib/style.css" />
+<script src="https://unpkg.com/vuelayers/lib/index.umd.js"></script>
 
+<link rel="stylesheet" href="https://unpkg.com/vuelayers/lib/style.css" />
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Vue Training</title>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
-    <div id="app-2">
-      <span v-bind:title="message">
-        Passez votre souris sur moi pendant quelques secondes pour voir mon
-        titre lié dynamiquement !
-      </span>
-    </div>
-    <div id="app-3">
-      <p v-if="seen">Maintenant vous me voyez</p>
-      <button v-on:click="seen = false">Hide</button>
-      <button v-on:click="seen = true">show</button>
-    </div>
+    <article class="panel">
+      <div id="app-2">
+        <span v-bind:title="message">
+          Passez votre souris sur moi pendant quelques secondes pour voir mon
+          titre lié dynamiquement !
+        </span>
+      </div>
+      <div id="app-3">
+        <p v-if="seen">Maintenant vous me voyez</p>
+        <button v-on:click="seen = false">Hide</button>
+        <button v-on:click="seen = true">show</button>
+      </div>
 
-    <div id="app-4">
-      <ol>
-        <li v-for="todo in todos">{{todo.text}}</li>
-      </ol>
-    </div>
+      <div id="app-4">
+        <ol>
+          <li v-for="todo in todos">{{todo.text}}</li>
+        </ol>
+      </div>
 
-    <div id="app-5">
-      <p>{{message}}</p>
-      <button v-on:click="reverseMessage">Message retourné</button>
-    </div>
+      <div id="app-5">
+        <p>{{message}}</p>
+        <button v-on:click="reverseMessage">Message retourné</button>
+      </div>
 
-    <div id="app-6">
-      <p>{{message}}</p>
-      <input v-model="message" />
-    </div>
+      <div id="app-6">
+        <p>{{message}}</p>
+        <input v-model="message" />
+      </div>
 
-    <div id="todolist">
-      <ol>
-        <todo-item></todo-item>
-        <todo-item2></todo-item2>
-      </ol>
-    </div>
+      <div id="todolist">
+        <ol>
+          <todo-item></todo-item>
+          <todo-item2></todo-item2>
+        </ol>
+      </div>
 
-    <div id="components-demo">
-      <button-counter> </button-counter>
-    </div>
+      <div id="components-demo">
+        <button-counter> </button-counter>
+      </div>
 
-    <div id="switchButton">
-      <switch-button> </switch-button>
-      <p v-if="this.state=true">On</p>
-      <p v-else>Off</p>
-    </div>
+      <div id="switchButton">
+        <switch-button> </switch-button>
+      </div>
+    </article>
 
+    <article class="map">
+      <template>
+        <div>
+          <vl-map
+            :load-tiles-while-animating="true"
+            :load-tiles-while-interacting="true"
+            data-projection="EPSG:4326"
+            style="height: 400px"
+          >
+            <vl-view
+              :zoom.sync="zoom"
+              :center.sync="center"
+              :rotation.sync="rotation"
+            ></vl-view>
+
+            <vl-geoloc @update:position="geolocPosition = $event">
+              <template slot-scope="geoloc">
+                <vl-feature v-if="geoloc.position" id="position-feature">
+                  <vl-geom-point :coordinates="geoloc.position"></vl-geom-point>
+                  <vl-style-box>
+                    <vl-style-icon
+                      src="_media/marker.png"
+                      :scale="0.4"
+                      :anchor="[0.5, 1]"
+                    ></vl-style-icon>
+                  </vl-style-box>
+                </vl-feature>
+              </template>
+            </vl-geoloc>
+
+            <vl-layer-tile id="osm">
+              <vl-source-osm></vl-source-osm>
+            </vl-layer-tile>
+          </vl-map>
+          <div style="padding: 20px">
+            Zoom: {{ zoom }}<br />
+            Center: {{ center }}<br />
+            Rotation: {{ rotation }}<br />
+            My geolocation: {{ geolocPosition }}
+          </div>
+        </div>
+      </template>
+
+    <div id="openlayers"><openlayers></openlayers></div>
     <script src="vueTraining1.js"></script>
+    <script src="vueLayers.js"></script>
+
     <script>
       //tooltip "message" binder avec le title de la page html
       const app2 = new Vue({
@@ -98,9 +152,18 @@
         },
       });
 
+   
+
       new Vue({ el: "#components-demo" });
 
       const buttonSwitcher = new Vue({ el: "#switchButton" });
     </script>
+
+    <style>
+      .panel {
+        width: 50%;
+        background-color: #f5f5f5;
+      }
+    </style>
   </body>
 </html>
