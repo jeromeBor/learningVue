@@ -24,21 +24,23 @@ export default {
   mounted() {
     this.initiateMap();
   },
+
   methods: {
     initiateMap() {
       //icon de toulouse
-      const Toulouse = new Feature({
+      const toulouse = new Feature({
         geometry: new Point(fromLonLat([1.444209, 43.604652])),
         name: "Toulouse",
         anchorOrigin: "bottom-left",
       });
-      const toulouseStyle = new Style({
-        image: new Icon({
-          src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
-        }),
-      });
 
-      Toulouse.setStyle(toulouseStyle);
+      toulouse.setStyle(
+        new Style({
+          image: new Icon({
+            src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
+          }),
+        })
+      );
 
       // icon de paris
       const paris = new Feature({
@@ -56,16 +58,20 @@ export default {
 
       // map for mini map
       const OVsource = new OSM();
-      const vectorSource = new VectorSource({ features: [Toulouse, paris] });
 
-      const vector = new VectorLayer({
-        source: vectorSource,
+      // France Icon source
+      const franceIconSource = new VectorSource({
+        features: [toulouse, paris],
       });
+      // France Icon layer implemented with source
+      const franceIconLayer = new VectorLayer({
+        source: franceIconSource,
+      });
+
+      // normal map
       const raster = new TileLayer({
         source: new OSM(),
       });
-      // create map with 2 layer up here
-
       const map = new Map({
         controls: defaultControls().extend([
           new OverviewMap({
@@ -74,17 +80,20 @@ export default {
           new ScaleLine({}),
         ]),
         target: "map",
-        layers: [raster, vector],
+        layers: [raster, franceIconLayer],
         view: new View({
           // projection: "EPSG:4326",
           center: fromLonLat([1.444209, 43.604652]),
-          zoom: 9,
+          zoom: 7,
         }),
       });
 
-      // récupération de tout les feature (points) dans le layer choisi
-      var getAllFeature = vectorSource.getFeatures();
-      console.log(getAllFeature);
+      // récupération de tout les feature dans le layer choisi
+      // const getAllFeature = franceIconSource.getFeatures();
+      // console.log(getAllFeature);
+
+      // push des features dans le state features list 2
+      this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures()); // this.$store.commit("LOAD_FEATURES:", { name: "test", population: "22" });
     },
   },
 };
