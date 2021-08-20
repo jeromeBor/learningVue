@@ -20,6 +20,8 @@ import { fromLonLat } from "ol/proj";
 import { Icon, Style } from "ol/style";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { OSM, Vector as VectorSource } from "ol/source";
+import { toulouse, lyon, paris } from "./Features";
+
 export default {
   mounted() {
     this.initiateMap();
@@ -27,51 +29,8 @@ export default {
 
   methods: {
     initiateMap() {
-      //icon de toulouse
-      const toulouse = new Feature({
-        geometry: new Point(fromLonLat([1.444209, 43.604652])),
-        name: "Toulouse",
-        anchorOrigin: "bottom-left",
-      });
-      toulouse.setStyle(
-        new Style({
-          image: new Icon({
-            src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
-          }),
-        })
-      );
-
-      // icon de paris
-      const paris = new Feature({
-        geometry: new Point(fromLonLat([2.353, 48.8566])),
-        name: "Paris",
-      });
-      paris.setStyle(
-        new Style({
-          image: new Icon({
-            crossOrigin: "anonymous",
-            src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
-          }),
-        })
-      );
-
-      //icon de lyon
-      const lyon = new Feature({
-        geometry: new Point(fromLonLat([4.835659, 45.764043])),
-        name: "Lyon",
-      });
-      lyon.setStyle(
-        new Style({
-          image: new Icon({
-            crossOrigin: "anonymous",
-            src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
-          }),
-        })
-      );
-
       // map for mini map
       const OVsource = new OSM();
-
       // France Icon source
       const franceIconSource = new VectorSource({
         features: [toulouse, paris, lyon],
@@ -80,13 +39,10 @@ export default {
       const franceIconLayer = new VectorLayer({
         source: franceIconSource,
       });
-
       const view = new View({
-        // projection: "EPSG:4326",
         center: fromLonLat([1.444209, 43.604652]),
         zoom: 7,
       });
-
       // normal map
       const raster = new TileLayer({
         source: new OSM(),
@@ -108,24 +64,16 @@ export default {
       zoomtotoulouse.addEventListener(
         "click",
         function() {
-          // const point = franceIconSource.get Features()[0].getGeometry();
           const feature = franceIconSource.getFeatures()[0];
           const point = feature.getGeometry();
-          const size = map.getSize();
+          // recenter map based on map div size
+          // const size = map.getSize();
           view
-            .centerOn(point, size, [size[0] % 2, size[1] % 2])
-            .fit(point, { padding: [170, 50, 30, 150] });
+            // .centerOn(point.getCoordinates(), size, [size[0] / 2, size[1] / 2])
+            .fit(point, { minResolution: 50 });
         },
         false
       );
-
-      console.log(
-        franceIconSource
-          .getFeatures()[0]
-          .getGeometry()
-          .getCoordinates()
-      );
-      // console.log(map.getSize()[0]);
 
       // push des features dans le state features list 2
       this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());

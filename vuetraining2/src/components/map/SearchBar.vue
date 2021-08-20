@@ -1,8 +1,7 @@
 <template>
   <div class="map-control-panel">
     <input v-model="searchInput" type="text" placeholder="Cherchez un pays" />
-    <button id="zoomtolyon">Zoom Lyon</button>
-    <button id="zoomtoparis">Zoom Paris</button>
+
     <button id="zoomtotoulouse">Zoom Toulouse</button>
 
     <ul id="features-list">
@@ -20,12 +19,10 @@ export default {
   data() {
     return {
       searchInput: "",
-      // filterFeatureList: [{ name: "audi" }, { name: "fiat" }],
     };
   },
   computed: {
     featuresList() {
-      // récupération du getters de mon state
       return this.$store.getters.GET_FEATURESNAME;
     },
 
