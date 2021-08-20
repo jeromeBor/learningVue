@@ -33,7 +33,6 @@ export default {
         name: "Toulouse",
         anchorOrigin: "bottom-left",
       });
-
       toulouse.setStyle(
         new Style({
           image: new Icon({
@@ -56,16 +55,36 @@ export default {
         })
       );
 
+      //icon de lyon
+      const lyon = new Feature({
+        geometry: new Point(fromLonLat([4.835659, 45.764043])),
+        name: "Lyon",
+      });
+      lyon.setStyle(
+        new Style({
+          image: new Icon({
+            crossOrigin: "anonymous",
+            src: "https://openlayers.org/en/v4.6.5/examples/data/icon.png",
+          }),
+        })
+      );
+
       // map for mini map
       const OVsource = new OSM();
 
       // France Icon source
       const franceIconSource = new VectorSource({
-        features: [toulouse, paris],
+        features: [toulouse, paris, lyon],
       });
       // France Icon layer implemented with source
       const franceIconLayer = new VectorLayer({
         source: franceIconSource,
+      });
+
+      const view = new View({
+        // projection: "EPSG:4326",
+        center: fromLonLat([1.444209, 43.604652]),
+        zoom: 7,
       });
 
       // normal map
@@ -81,19 +100,36 @@ export default {
         ]),
         target: "map",
         layers: [raster, franceIconLayer],
-        view: new View({
-          // projection: "EPSG:4326",
-          center: fromLonLat([1.444209, 43.604652]),
-          zoom: 7,
-        }),
+        view: view,
       });
 
-      // récupération de tout les feature dans le layer choisi
-      // const getAllFeature = franceIconSource.getFeatures();
-      // console.log(getAllFeature);
+      const zoomtotoulouse = document.getElementById("zoomtotoulouse");
+
+      zoomtotoulouse.addEventListener(
+        "click",
+        function() {
+          // const point = franceIconSource.get Features()[0].getGeometry();
+          const feature = franceIconSource.getFeatures()[0];
+          const point = feature.getGeometry();
+          const size = map.getSize();
+          view
+            .centerOn(point, size, [size[0] % 2, size[1] % 2])
+            .fit(point, { padding: [170, 50, 30, 150] });
+        },
+        false
+      );
+
+      console.log(
+        franceIconSource
+          .getFeatures()[0]
+          .getGeometry()
+          .getCoordinates()
+      );
+      // console.log(map.getSize()[0]);
 
       // push des features dans le state features list 2
-      this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures()); // this.$store.commit("LOAD_FEATURES:", { name: "test", population: "22" });
+      this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());
+      // this.$store.commit("ADD_MAP", map.franceIconSource());
     },
   },
 };

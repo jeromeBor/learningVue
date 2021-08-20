@@ -1,17 +1,13 @@
 <template>
   <div class="map-control-panel">
-    <input type="text" placeholder="Cherchez un pays" />
-    <button>Reset input</button>
-    <button>Paris</button>
-    <button>Toulouse</button>
-    <!-- <ul id="example-1">
-      <li v-for="city in openlayersFeatureList" :key="city.name">
-        {{ city.name }}
-      </li>
-    </ul> -->
-    <ul id="example-1">
-      <li v-for="features in features" :key="features.name">
-        {{ features }}
+    <input v-model="searchInput" type="text" placeholder="Cherchez un pays" />
+    <button id="zoomtolyon">Zoom Lyon</button>
+    <button id="zoomtoparis">Zoom Paris</button>
+    <button id="zoomtotoulouse">Zoom Toulouse</button>
+
+    <ul id="features-list">
+      <li v-for="feature in filterByTerm" :key="feature">
+        {{ feature }}
       </li>
     </ul>
   </div>
@@ -20,14 +16,23 @@
 <script>
 export default {
   name: "MapPanel",
-  // je récupère le getter nommé auquel j'ai attribué un fonction map
+
+  data() {
+    return {
+      searchInput: "",
+      // filterFeatureList: [{ name: "audi" }, { name: "fiat" }],
+    };
+  },
   computed: {
-    // ----- sans le getters ----
-    // openlayersFeatureList() {
-    //   return this.$store.state.featuresList;
-    // },
-    features() {
+    featuresList() {
+      // récupération du getters de mon state
       return this.$store.getters.GET_FEATURESNAME;
+    },
+
+    filterByTerm() {
+      return this.featuresList.filter((feature) => {
+        return feature.toLowerCase().includes(this.searchInput.toLowerCase());
+      });
     },
   },
 };
@@ -41,5 +46,9 @@ export default {
   z-index: 99;
   padding: 1rem;
   background-color: rgba(150, 150, 150, 0.5);
+}
+
+#features-list li {
+  list-style: none;
 }
 </style>
