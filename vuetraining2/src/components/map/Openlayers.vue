@@ -9,15 +9,13 @@ import "ol/ol.css";
 
 import Map from "ol/Map";
 import View from "ol/View";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
+
 import {
   defaults as defaultControls,
   ScaleLine,
   OverviewMap,
 } from "ol/control";
 import { fromLonLat } from "ol/proj";
-import { Icon, Style } from "ol/style";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { OSM, Vector as VectorSource } from "ol/source";
 import { toulouse, lyon, paris } from "./Features";
@@ -74,10 +72,9 @@ export default {
         },
         false
       );
-
       // push des features dans le state features list 2
       this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());
-      // this.$store.commit("ADD_MAP", map.franceIconSource());
+      // console.log(toulouse.getCoordinates());
     },
   },
 };

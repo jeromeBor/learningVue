@@ -5,8 +5,8 @@
     <button id="zoomtotoulouse">Zoom Toulouse</button>
 
     <ul id="features-list">
-      <li v-for="feature in filterByTerm" :key="feature">
-        {{ feature }}
+      <li v-for="feature in filterByTerm" :key="feature" @click="storeCoords">
+        {{ feature.values_.name }}
       </li>
     </ul>
   </div>
@@ -21,15 +21,23 @@ export default {
       searchInput: "",
     };
   },
+
   computed: {
-    featuresList() {
-      return this.$store.getters.GET_FEATURESNAME;
+    listedFeatures() {
+      return this.$store.getters.GET_ALLFEATURES;
+    },
+    filterByTerm() {
+      return this.listedFeatures.filter((feature) => {
+        return feature.values_.name
+          .toLowerCase()
+          .includes(this.searchInput.toLowerCase());
+      });
     },
 
-    filterByTerm() {
-      return this.featuresList.filter((feature) => {
-        return feature.toLowerCase().includes(this.searchInput.toLowerCase());
-      });
+    methods: {
+      storeCoords: function(store) {
+        store.dispatch("increment");
+      },
     },
   },
 };
