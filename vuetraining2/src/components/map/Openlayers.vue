@@ -1,7 +1,11 @@
 <template>
-  <div id="map"></div>
+  <div id="map">
+    <SearchBar />
+  </div>
 </template>
 <script>
+import SearchBar from "@/components/map/SearchBar.vue";
+
 /* eslint-disable */
 // import openlayer css for style
 import "ol/ol.css";
@@ -19,13 +23,46 @@ import { fromLonLat } from "ol/proj";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { OSM, Vector as VectorSource } from "ol/source";
 import { toulouse, lyon, paris } from "./Features";
+import { useStore } from "vuex";
+import { watch } from "vue";
 
 export default {
+  components: {
+    SearchBar,
+  },
+
   mounted() {
     this.initiateMap();
   },
 
+  data() {
+    return {
+      view: null,
+      map: null,
+    };
+  },
+
+  setup() {
+    const store = useStore();
+    const self = this;
+    watch(
+      () => store.state.currentSelectedFeature,
+      function() {
+        console.log(self.$store.getters.GET_SELECTED_FEATURE);
+
+        // this.view.fit(point, {
+        //   minResolution: 50,
+        // });
+        false;
+      }
+    );
+  },
+
   methods: {
+    getSelectedFeature() {
+      return this.$store.getters.GET_SELECTED_FEATURE;
+    },
+
     initiateMap() {
       // map for mini map
       const OVsource = new OSM();
@@ -58,23 +95,22 @@ export default {
       });
 
       const zoomtotoulouse = document.getElementById("zoomtotoulouse");
-
       zoomtotoulouse.addEventListener(
         "click",
         function() {
           const feature = franceIconSource.getFeatures()[0];
           const point = feature.getGeometry();
-          // recenter map based on map div size
-          // const size = map.getSize();
-          view
-            // .centerOn(point.getCoordinates(), size, [size[0] / 2, size[1] / 2])
-            .fit(point, { minResolution: 50 });
+
+          // view.fit(point, { minResolution: 50 });
+          console.log(point);
         },
         false
       );
+      this.view = view;
+      this.map = map;
+
       // push des features dans le state features list 2
       this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());
-      // console.log(toulouse.getCoordinates());
     },
   },
 };

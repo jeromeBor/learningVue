@@ -6,7 +6,7 @@ import { Icon, Style } from "ol/style";
 // icon de paris
 export const toulouse = new Feature({
   geometry: new Point(fromLonLat([1.444209, 43.604652])),
-  name: "Toulouse",
+  name: "toulouse",
   anchorOrigin: "bottom-left",
 });
 toulouse.setStyle(
@@ -16,11 +16,12 @@ toulouse.setStyle(
     }),
   })
 );
+toulouse.setId("toulouse");
 
 // icon de paris
 export const paris = new Feature({
   geometry: new Point(fromLonLat([2.353, 48.8566])),
-  name: "Paris",
+  name: "paris",
 });
 paris.setStyle(
   new Style({
@@ -30,11 +31,12 @@ paris.setStyle(
     }),
   })
 );
+paris.setId("paris");
 
 //icon de lyon
 export const lyon = new Feature({
   geometry: new Point(fromLonLat([4.835659, 45.764043])),
-  name: "Lyon",
+  name: "lyon",
 });
 lyon.setStyle(
   new Style({
@@ -44,3 +46,4 @@ lyon.setStyle(
     }),
   })
 );
+lyon.setId("lyon");
