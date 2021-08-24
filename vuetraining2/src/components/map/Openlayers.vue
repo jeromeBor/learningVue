@@ -1,6 +1,11 @@
 <template>
   <div id="map">
     <SearchBar />
+
+    <p v-if="getSelectedFeature">
+      Vous avez zoomé sur : {{ getSelectedFeatureName() }}
+    </p>
+    <p v-else>Aucune feature de selectionnée</p>
   </div>
 </template>
 <script>
@@ -31,8 +36,29 @@ export default {
     SearchBar,
   },
 
+  computed: {
+    getSelectedFeature() {
+      return this.$store.getters.GET_SELECTED_FEATURE;
+    },
+  },
+
   mounted() {
     this.initiateMap();
+    const store = useStore();
+    const self = this;
+
+    watch(
+      () => store.state.currentSelectedFeature,
+      function() {
+        const point = store.getters.GET_SELECTED_FEATURE.getGeometry();
+        self.view.fit(point, {
+          minResolution: 50,
+          duration: 2000,
+        });
+
+        false;
+      }
+    );
   },
 
   data() {
@@ -42,25 +68,13 @@ export default {
     };
   },
 
-  setup() {
-    const store = useStore();
-    const self = this;
-    watch(
-      () => store.state.currentSelectedFeature,
-      function() {
-        console.log(self.$store.getters.GET_SELECTED_FEATURE);
-
-        // this.view.fit(point, {
-        //   minResolution: 50,
-        // });
-        false;
-      }
-    );
-  },
-
   methods: {
-    getSelectedFeature() {
-      return this.$store.getters.GET_SELECTED_FEATURE;
+    // storeFeature() {
+    //   this.$store.dispatch("SELECT_FEATURE", this.clickedFeature);
+    // },
+
+    getSelectedFeatureName() {
+      return this.$store.getters.GET_SELECTED_FEATURE_NAME;
     },
 
     initiateMap() {
@@ -94,23 +108,28 @@ export default {
         view: view,
       });
 
-      const zoomtotoulouse = document.getElementById("zoomtotoulouse");
-      zoomtotoulouse.addEventListener(
-        "click",
-        function() {
-          const feature = franceIconSource.getFeatures()[0];
-          const point = feature.getGeometry();
+      map.on("click", function(e) {
+        const clickedFeature = map.forEachFeatureAtPixel(e.pixel, function(
+          clickedFeature
+        ) {
+          return clickedFeature;
+        });
 
-          // view.fit(point, { minResolution: 50 });
-          console.log(point);
-        },
-        false
-      );
-      this.view = view;
-      this.map = map;
+        if (clickedFeature) {
+          view.fit(clickedFeature.getGeometry(), {
+            minResolution: 200,
+            duration: 1000,
+          });
+          false;
+          console.log(clickedFeature);
+        } else return console.log("no feature selected");
+      });
 
       // push des features dans le state features list 2
       this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());
+
+      this.view = view;
+      this.map = map;
     },
   },
 };

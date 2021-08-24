@@ -1,24 +1,65 @@
 <template>
   <div class="map-control-panel">
-    <input v-model="searchInput" type="text" placeholder="Cherchez un pays" />
+    <div class="input-group mb-3"></div>
 
-    <button id="zoomtotoulouse">Zoom Toulouse</button>
-    <button id="zoomtotoulouse" v-on:click="resetInput">
-      Reset
-    </button>
-
-    <ul id="features-list">
-      <li
-        v-for="(feature, index) in filterByTerm"
-        :key="index"
-        v-on:click="storeFeature(index)"
-        class="zoomtofeature"
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingOne">
+        <button
+          class="accordion-button"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#collapseOne"
+          aria-expanded="false"
+          aria-controls="collapseOne"
+        >
+          Afficher/Cacher la recherche
+        </button>
+      </h2>
+      <div
+        id="collapseOne"
+        class="accordion-collapse collapse show"
+        aria-labelledby="headingOne"
+        data-bs-parent="#accordionExample"
       >
-        {{ feature.values_.name }}
-      </li>
-    </ul>
-    <p v-if="coordsSelected">Pas de point selectionnées</p>
-    <p v-else>Coordonnées actuelle :</p>
+        <div class="accordion-body">
+          <div class="w-auto d-flex flex-row m-1">
+            <input
+              v-model="searchInput"
+              type="text"
+              class="form-control "
+              placeholder="Search"
+              aria-label="Search"
+            />
+            <button
+              v-on:click="resetInput"
+              class="input-group-text btn-primary"
+              id="basic-addon1"
+            >
+              X
+            </button>
+          </div>
+          <ul
+            id="features-list"
+            class="d-flex flex-column justify-content-center align-items-center ps-0 p-1"
+          >
+            <button
+              v-for="(feature, index) in filterByTerm"
+              :key="index"
+              v-on:click="storeFeature(index)"
+              type="button"
+              class="btn btn-primary m-1"
+            >
+              {{ feature.values_.name }}
+            </button>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- <p v-if="this.$store.state.currentSelectedFeature.length === 0">
+      Pas de point selectionnées
+    </p> -->
+    <!-- <p>Coordonnées actuelle :{{ selectedFeature.values_.name }}</p> -->
   </div>
 </template>
 
@@ -46,7 +87,7 @@ export default {
     },
 
     selectedFeature() {
-      return this.$store.state.currentSelectedFeature;
+      return this.$store.getters.GET_SELECTED_FEATURE;
     },
   },
 
@@ -64,12 +105,15 @@ export default {
 
 <style>
 .map-control-panel {
-  right: 12px;
-  bottom: 100px;
+  right: 20px;
+  bottom: 20px;
   position: absolute;
   z-index: 99;
   padding: 1rem;
-  background-color: rgba(150, 150, 150, 0.5);
+}
+
+.accordion-item {
+  background-color: rgba(254, 254, 254, 0.5) !important;
 }
 
 #features-list li {

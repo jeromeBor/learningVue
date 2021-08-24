@@ -1,6 +1,6 @@
 <template>
   <div class="navbar">
-    <ul>
+    <ul class="p-2 m-0 mx-auto">
       <router-link to="/" class="nav-menu" isActive: true>Home</router-link>
       |
       <router-link :to="{ name: 'About' }" class="nav-menu" isActive: true>About</router-link>

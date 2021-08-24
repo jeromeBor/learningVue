@@ -14,18 +14,21 @@ export default createStore({
     GET_SELECTED_FEATURE(state) {
       return state.currentSelectedFeature;
     },
+    GET_SELECTED_FEATURE_NAME(state) {
+      return state.currentSelectedFeature.values_.name;
+    },
   },
   mutations: {
-    ADD_FEATURES(state, feature) {
-      state.featuresList = feature;
+    ADD_FEATURES(state, features) {
+      state.featuresList = features;
     },
     CHANGE_SELECTED_FEATURE(state, feature) {
       state.currentSelectedFeature = feature;
     },
   },
   actions: {
-    LOAD_FEATURES(context, feature) {
-      context.commit("ADD_FEATURES", feature);
+    LOAD_FEATURES(context, features) {
+      context.commit("ADD_FEATURES", features);
     },
     SELECT_FEATURE(context, feature) {
       context.commit("CHANGE_SELECTED_FEATURE", feature);
