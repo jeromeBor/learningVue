@@ -94,6 +94,9 @@ export default {
   methods: {
     storeFeature(index) {
       this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
+      this.$emit("onFeatureClicked");
+
+      console.log(this.filterByTerm[index]);
     },
 
     resetInput() {

@@ -1,6 +1,6 @@
 <template>
   <div id="map">
-    <SearchBar />
+    <SearchBar @FeatureClicked="onFeatureClicked" />
   </div>
   <div id="popup" class="ol-popup">
     <a
@@ -12,13 +12,38 @@
     </a>
     <div id="popup-content">
       <p v-if="getSelectedFeature">
+        <span>Ville : </span>
         <span
-          v-for="featuresname in this.$store.getters.GET_SELECTED_FEATURE_NAME"
+          v-for="(featuresname, index) in this.$store.getters
+            .GET_SELECTED_FEATURE_NAME"
           :key="featuresname"
         >
-          Ville : <code> {{ featuresname }}</code></span
-        ><br />
-        <span>
+          <code v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
+            >{{ featuresname
+            }}<span
+              v-if="
+                index + 1 < this.$store.getters.GET_SELECTED_FEATURE_NAME.length
+              "
+              >,
+            </span>
+          </code>
+          <code v-else>
+            {{ featuresname }}
+          </code>
+        </span>
+        <br />
+        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1">
+          Population totale :
+          <code>
+            {{
+              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
+                (a, b) => a + b,
+                0
+              )
+            }}</code
+          >
+        </span>
+        <span v-else>
           Population :
           <code>
             {{
@@ -27,8 +52,8 @@
                 0
               )
             }}</code
-          ></span
-        >
+          >
+        </span>
       </p>
     </div>
   </div>
@@ -42,8 +67,6 @@ import "ol/ol.css";
 
 import Map from "ol/Map";
 import View from "ol/View";
-import Feature from "ol/Feature";
-import Point from "ol/geom/Point";
 
 import { Circle as CircleStyle, Fill, Stroke, Style, Text } from "ol/style";
 import {
@@ -51,6 +74,7 @@ import {
   ScaleLine,
   OverviewMap,
 } from "ol/control";
+
 import Overlay from "ol/Overlay";
 import { fromLonLat } from "ol/proj";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
@@ -76,18 +100,18 @@ export default {
     this.initiateMap();
     const store = useStore();
     const self = this;
-    watch(
-      () => store.state.currentSelectedFeature,
-      () => {
-        const point = store.getters.GET_SELECTED_FEATURE[0].getGeometry();
-        self.view.fit(point, {
-          minResolution: 100,
-          duration: 100,
-        });
+    // watch(
+    //   () => store.state.currentSelectedFeature,
+    //   () => {
+    //     const point = store.getters.GET_SELECTED_FEATURE[0].getGeometry();
+    //     self.view.fit(point, {
+    //       minResolution: 100,
+    //       duration: 1000,
+    //     });
 
-        false;
-      }
-    );
+    //     false;
+    //   }
+    // );
   },
 
   data() {
@@ -111,16 +135,28 @@ export default {
           minResolution: 100,
           duration: 1000,
         });
+        // const coordinate = e.coordinate;
+        // this.overlay.setPosition(coordinate);
         false;
-        // popup
+        this.storeFeature(clickedFeature.values_.features);
+      } else return console.log("no feature selected");
+    },
+
+    onFeatureHovered(e) {
+      let hoveredFeature = [];
+      hoveredFeature = this.map.forEachFeatureAtPixel(
+        e.pixel,
+        (hoveredFeature) => {
+          return hoveredFeature;
+        }
+      );
+      if (hoveredFeature) {
+        this.storeFeature2(hoveredFeature.values_.features);
         const coordinate = e.coordinate;
         this.overlay.setPosition(coordinate);
-      } else return console.log("no feature selected");
-      console.log(
-        clickedFeature.values_.features.map((feature) => feature.values_.name)
-      );
-
-      this.storeFeature(clickedFeature.values_.features);
+      } else {
+        this.closePopup();
+      }
     },
 
     closePopup() {
@@ -130,6 +166,9 @@ export default {
       return false;
     },
 
+    storeFeature2(hoveredFeature) {
+      this.$store.dispatch("SELECT_FEATURE", hoveredFeature);
+    },
     storeFeature(clickedFeature) {
       this.$store.dispatch("SELECT_FEATURE", clickedFeature);
     },
@@ -214,12 +253,15 @@ export default {
           }),
           new ScaleLine({}),
         ]),
+        // interactions: defaultInteractions({ doubleClickZoom: false }),
         overlays: [overlay],
         target: "map",
         layers: [raster, clusters],
         view: view,
       });
-      map.on("click", this.onFeatureClicked);
+      map.on("singleclick", this.onFeatureClicked);
+      map.on("pointermove", this.onFeatureHovered);
+
       // push des features dans le state
       this.$store.dispatch("LOAD_FEATURES", clusterSourceFrance.getFeatures());
 
