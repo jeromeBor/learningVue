@@ -15,7 +15,14 @@ export default createStore({
       return state.currentSelectedFeature;
     },
     GET_SELECTED_FEATURE_NAME(state) {
-      return state.currentSelectedFeature.values_.name;
+      return state.currentSelectedFeature.map(
+        (featurename) => featurename.values_.name
+      );
+    },
+    GET_SELECTED_FEATURE_INFOS(state) {
+      return state.currentSelectedFeature.map(
+        (featurename) => featurename.values_.population
+      );
     },
   },
   mutations: {
@@ -26,6 +33,7 @@ export default createStore({
       state.currentSelectedFeature = feature;
     },
   },
+
   actions: {
     LOAD_FEATURES(context, features) {
       context.commit("ADD_FEATURES", features);

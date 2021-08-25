@@ -17,7 +17,7 @@
       </h2>
       <div
         id="collapseOne"
-        class="accordion-collapse collapse show"
+        class="accordion-collapse collapse"
         aria-labelledby="headingOne"
         data-bs-parent="#accordionExample"
       >
@@ -93,7 +93,7 @@ export default {
 
   methods: {
     storeFeature(index) {
-      this.$store.dispatch("SELECT_FEATURE", this.filterByTerm[index]);
+      this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
     },
 
     resetInput() {
@@ -105,8 +105,8 @@ export default {
 
 <style>
 .map-control-panel {
-  right: 20px;
-  bottom: 20px;
+  right: 10px;
+  bottom: 0px;
   position: absolute;
   z-index: 99;
   padding: 1rem;

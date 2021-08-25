@@ -1,16 +1,40 @@
 <template>
   <div id="map">
     <SearchBar />
-
-    <p v-if="getSelectedFeature">
-      Vous avez zoomé sur : {{ getSelectedFeatureName() }}
-    </p>
-    <p v-else>Aucune feature de selectionnée</p>
+  </div>
+  <div id="popup" class="ol-popup">
+    <a
+      href="#"
+      id="popup-closer"
+      class="ol-popup-closer"
+      v-on:click="closePopup"
+    >
+    </a>
+    <div id="popup-content">
+      <p v-if="getSelectedFeature">
+        <span
+          v-for="featuresname in this.$store.getters.GET_SELECTED_FEATURE_NAME"
+          :key="featuresname"
+        >
+          Ville : <code> {{ featuresname }}</code></span
+        ><br />
+        <span>
+          Population :
+          <code>
+            {{
+              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
+                (a, b) => a + b,
+                0
+              )
+            }}</code
+          ></span
+        >
+      </p>
+    </div>
   </div>
 </template>
 <script>
 import SearchBar from "@/components/map/SearchBar.vue";
-
 /* eslint-disable */
 // import openlayer css for style
 import "ol/ol.css";
@@ -18,18 +42,24 @@ import "ol/ol.css";
 
 import Map from "ol/Map";
 import View from "ol/View";
+import Feature from "ol/Feature";
+import Point from "ol/geom/Point";
 
+import { Circle as CircleStyle, Fill, Stroke, Style, Text } from "ol/style";
 import {
   defaults as defaultControls,
   ScaleLine,
   OverviewMap,
 } from "ol/control";
+import Overlay from "ol/Overlay";
 import { fromLonLat } from "ol/proj";
 import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
-import { OSM, Vector as VectorSource } from "ol/source";
-import { toulouse, lyon, paris } from "./Features";
+import { Cluster, OSM, Vector as VectorSource } from "ol/source";
+
 import { useStore } from "vuex";
 import { watch } from "vue";
+
+import { toulouse, lyon, paris } from "./Features";
 
 export default {
   components: {
@@ -46,14 +76,13 @@ export default {
     this.initiateMap();
     const store = useStore();
     const self = this;
-
     watch(
       () => store.state.currentSelectedFeature,
-      function() {
-        const point = store.getters.GET_SELECTED_FEATURE.getGeometry();
+      () => {
+        const point = store.getters.GET_SELECTED_FEATURE[0].getGeometry();
         self.view.fit(point, {
-          minResolution: 50,
-          duration: 2000,
+          minResolution: 100,
+          duration: 100,
         });
 
         false;
@@ -65,29 +94,111 @@ export default {
     return {
       view: null,
       map: null,
+      clickedFeature: [],
     };
   },
 
   methods: {
-    // storeFeature() {
-    //   this.$store.dispatch("SELECT_FEATURE", this.clickedFeature);
-    // },
+    onFeatureClicked(e) {
+      const clickedFeature = this.map.forEachFeatureAtPixel(
+        e.pixel,
+        (clickedFeature) => {
+          return clickedFeature;
+        }
+      );
+      if (clickedFeature) {
+        this.view.fit(clickedFeature.getGeometry(), {
+          minResolution: 100,
+          duration: 1000,
+        });
+        false;
+        // popup
+        const coordinate = e.coordinate;
+        this.overlay.setPosition(coordinate);
+      } else return console.log("no feature selected");
+      console.log(
+        clickedFeature.values_.features.map((feature) => feature.values_.name)
+      );
 
-    getSelectedFeatureName() {
-      return this.$store.getters.GET_SELECTED_FEATURE_NAME;
+      this.storeFeature(clickedFeature.values_.features);
+    },
+
+    closePopup() {
+      const closer = document.getElementById("popup-closer");
+      this.overlay.setPosition(undefined);
+      closer.blur();
+      return false;
+    },
+
+    storeFeature(clickedFeature) {
+      this.$store.dispatch("SELECT_FEATURE", clickedFeature);
+    },
+
+    getAllFeature() {
+      return this.$store.getters.GET_ALLFEATURES;
     },
 
     initiateMap() {
+      const clusterSourceFrance = new VectorSource({
+        features: [toulouse, paris, lyon],
+      });
+
+      const newCluster = new Cluster({
+        distance: 30,
+        minDistance: 30,
+        source: clusterSourceFrance,
+      });
+      const styleCache = {};
+
+      const clusters = new VectorLayer({
+        source: newCluster,
+        style: function(feature) {
+          const size = feature.get("features").length;
+          let style = styleCache[size];
+          if (!style) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: 20,
+                stroke: new Stroke({
+                  color: "#fff",
+                }),
+                fill: new Fill({
+                  color: "#3399CC",
+                }),
+              }),
+              text: new Text({
+                text: size.toString(),
+                fill: new Fill({
+                  color: "#fff",
+                }),
+              }),
+            });
+            styleCache[size] = style;
+          }
+
+          return style;
+        },
+      });
+
+      //--- POPUP ---//
+      const container = document.getElementById("popup");
+
+      const overlay = new Overlay({
+        element: container,
+        autoPan: true,
+        autoPanAnimation: {
+          duration: 250,
+        },
+      });
+
       // map for mini map
       const OVsource = new OSM();
       // France Icon source
-      const franceIconSource = new VectorSource({
-        features: [toulouse, paris, lyon],
-      });
+      // const franceIconSource = new VectorSource({
+      //   features: [toulouse, paris, lyon],
+      // });
       // France Icon layer implemented with source
-      const franceIconLayer = new VectorLayer({
-        source: franceIconSource,
-      });
+
       const view = new View({
         center: fromLonLat([1.444209, 43.604652]),
         zoom: 7,
@@ -103,33 +214,18 @@ export default {
           }),
           new ScaleLine({}),
         ]),
+        overlays: [overlay],
         target: "map",
-        layers: [raster, franceIconLayer],
+        layers: [raster, clusters],
         view: view,
       });
-
-      map.on("click", function(e) {
-        const clickedFeature = map.forEachFeatureAtPixel(e.pixel, function(
-          clickedFeature
-        ) {
-          return clickedFeature;
-        });
-
-        if (clickedFeature) {
-          view.fit(clickedFeature.getGeometry(), {
-            minResolution: 200,
-            duration: 1000,
-          });
-          false;
-          console.log(clickedFeature);
-        } else return console.log("no feature selected");
-      });
-
-      // push des features dans le state features list 2
-      this.$store.dispatch("LOAD_FEATURES", franceIconSource.getFeatures());
+      map.on("click", this.onFeatureClicked);
+      // push des features dans le state
+      this.$store.dispatch("LOAD_FEATURES", clusterSourceFrance.getFeatures());
 
       this.view = view;
       this.map = map;
+      this.overlay = overlay;
     },
   },
 };
@@ -155,5 +251,49 @@ export default {
 }
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+
+.ol-popup {
+  position: absolute;
+  background-color: white;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #cccccc;
+  bottom: 12px;
+  left: -50px;
+  min-width: 280px;
+}
+.ol-popup:after,
+.ol-popup:before {
+  top: 100%;
+  border: solid transparent;
+  content: " ";
+  height: 0;
+  width: 0;
+  position: absolute;
+  pointer-events: none;
+}
+.ol-popup:after {
+  border-top-color: white;
+  border-width: 10px;
+  left: 48px;
+  margin-left: -10px;
+}
+.ol-popup:before {
+  border-top-color: #cccccc;
+  border-width: 11px;
+  left: 48px;
+  margin-left: -11px;
+}
+.ol-popup-closer {
+  text-decoration: none;
+  position: absolute;
+  top: 2px;
+  right: 8px;
+}
+.ol-popup-closer:after {
+  content: "✖";
+  font-size: 25px;
 }
 </style>
