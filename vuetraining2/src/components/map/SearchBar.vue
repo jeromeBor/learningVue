@@ -55,11 +55,6 @@
         </div>
       </div>
     </div>
-
-    <!-- <p v-if="this.$store.state.currentSelectedFeature.length === 0">
-      Pas de point selectionnées
-    </p> -->
-    <!-- <p>Coordonnées actuelle :{{ selectedFeature.values_.name }}</p> -->
   </div>
 </template>
 
@@ -94,7 +89,7 @@ export default {
   methods: {
     storeFeature(index) {
       this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
-      this.$emit("onFeatureClicked");
+      this.$emit("onListFeatureClicked");
 
       console.log(this.filterByTerm[index]);
     },
