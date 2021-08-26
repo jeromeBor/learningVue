@@ -79,6 +79,8 @@ import {
   ScaleLine,
   OverviewMap,
 } from "ol/control";
+import GeoJSON from "ol/format/GeoJSON";
+// import buildingsData from "./france.geojson";
 
 import Overlay from "ol/Overlay";
 import { fromLonLat } from "ol/proj";
@@ -184,7 +186,10 @@ export default {
 
     initiateMap() {
       const clusterSourceFrance = new VectorSource({
-        features: [toulouse, paris, lyon],
+        // features: [toulouse, paris, lyon],
+        format: new GeoJSON(),
+        url: "./data/france.geojson",
+        // features: new GeoJSON().readFeatures(geojsonObject),
       });
 
       ///---  clustering --- //
