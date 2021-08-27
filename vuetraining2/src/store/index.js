@@ -6,6 +6,7 @@ export default createStore({
     featureCoords: [],
     currentSelectedFeature: null,
     isMapLoading: false,
+    layers: [],
   },
   //je créé un getters nommé qui sert a "get" les éléments de mon state, ici le nom
   getters: {
@@ -34,7 +35,11 @@ export default createStore({
     GET_LOADING_STATE_MAP(state) {
       return state.isMapLoading;
     },
+    GET_LAYER_INFOS(state) {
+      return state.layers;
+    },
   },
+
   mutations: {
     ADD_FEATURES(state, features) {
       state.featuresList = features;
@@ -44,6 +49,9 @@ export default createStore({
     },
     CHANGE_LOADING_STATE(state, isLoading) {
       state.isMapLoading = isLoading;
+    },
+    ADD_LAYERS(state, layers) {
+      state.layers = layers;
     },
   },
 
@@ -56,6 +64,9 @@ export default createStore({
     },
     TOGGLE_LOADING(context, isLoading) {
       context.commit("CHANGE_LOADING_STATE", isLoading);
+    },
+    LOAD_LAYERS(context, layers) {
+      context.commit("ADD_LAYERS", layers);
     },
   },
 });

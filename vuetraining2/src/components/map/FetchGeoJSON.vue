@@ -9,8 +9,11 @@ export default {
         .get("http://localhost:8080/france.geojson", {})
         .then((res) => res.data)
         .then((data) => this.$store.dispatch("LOAD_FEATURES", data))
-        //settimeout !
-        .then(this.$store.dispatch("TOGGLE_LOADING", false));
+        .then(
+          // setTimeout(() => {
+          this.$store.dispatch("TOGGLE_LOADING", false)
+          // }, 2000)
+        );
     },
   },
 
@@ -19,5 +22,3 @@ export default {
   },
 };
 </script>
-
-<style scoped></style>

@@ -1,12 +1,12 @@
 <template>
   <div class="d-flex flex-column align-items-center justify-content-center">
-    <img src="@/components/loader.svg" class="rotate-center" />
+    <img src="@/img/loader.svg" class="rotate-center" />
     <span class="fs-3 font-weight-bold text-info">Chargement..</span>
   </div>
 </template>
 
 <script>
-import loader from "@/components/loader.svg";
+import loader from "@/img/loader.svg";
 export default {
   name: "Loader",
 
@@ -20,9 +20,8 @@ export default {
 
 <style>
 .rotate-center {
-  -webkit-animation: rotate-center 1.5s cubic-bezier(0.77, 0, 0.175, 1) 2s
-    infinite;
-  animation: rotate-center 1.5s cubic-bezier(0.77, 0, 0.175, 1) 2s infinite;
+  -webkit-animation: rotate-center 1.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+  animation: rotate-center 1.5s cubic-bezier(0.77, 0, 0.175, 1) infinite;
 }
 
 @-webkit-keyframes rotate-center {

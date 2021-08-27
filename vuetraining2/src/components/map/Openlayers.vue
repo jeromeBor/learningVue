@@ -12,55 +12,6 @@
     >
     </a>
     <Popup @getSelectedFeature="getSelectedFeature" />
-    <!-- <div id="popup-content">
-      <p v-if="getSelectedFeature">
-        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
-          >Villes :
-        </span>
-        <span v-else>Ville : </span>
-        <span
-          v-for="(featuresname, index) in this.$store.getters
-            .GET_SELECTED_FEATURE_NAME"
-          :key="featuresname"
-        >
-          <code v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
-            >{{ featuresname
-            }}<span
-              v-if="
-                index + 1 < this.$store.getters.GET_SELECTED_FEATURE_NAME.length
-              "
-              >,
-            </span>
-          </code>
-          <code v-else>
-            {{ featuresname }}
-          </code>
-        </span>
-        <br />
-        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1">
-          Population totale :
-          <code>
-            {{
-              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
-                (a, b) => a + b,
-                0
-              )
-            }}</code
-          >
-        </span>
-        <span v-else>
-          Population :
-          <code>
-            {{
-              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
-                (a, b) => a + b,
-                0
-              )
-            }}</code
-          >
-        </span>
-      </p>
-    </div>-->
   </div>
 </template>
 <script>
@@ -93,6 +44,8 @@ import { Cluster, OSM, Vector as VectorSource } from "ol/source";
 import { ZoomSlider } from "ol/control";
 import { defaults as defaultInteractions } from "ol/interaction";
 
+import BaseObject from "ol/Object";
+
 export default {
   components: {
     SearchBar,
@@ -124,7 +77,7 @@ export default {
         .coordinates;
       console.log(point);
       this.map.getView().setCenter(transform(point, "EPSG:4326", "EPSG:3857"));
-      this.map.getView().setZoom(20);
+      this.map.getView().setZoom(15);
     },
 
     onFeatureClicked(e) {
@@ -189,9 +142,6 @@ export default {
 
     initiateMap() {
       const clusterSourceFrance = new VectorSource({
-        // features: new GeoJSON().readFeatures(geojsonObject, {
-        //   dataProjection: "EPSG:4326",
-        //   featureProjection: "EPSG:3857",
         url: "http://localhost:8080/france.geojson",
         format: new GeoJSON(),
       });
@@ -205,14 +155,16 @@ export default {
       const styleCache = {};
 
       const clusters = new VectorLayer({
+        title: "France",
         source: newCluster,
         style: function(feature) {
           const size = feature.get("features").length;
+
           let style = styleCache[size];
           if (!style) {
             style = new Style({
               image: new CircleStyle({
-                radius: 20,
+                radius: 15 + 1 * size,
                 stroke: new Stroke({
                   color: "#fff",
                 }),
@@ -221,6 +173,7 @@ export default {
                 }),
               }),
               text: new Text({
+                font: size * 1 + 10 + "px sans-serif",
                 text: size.toString(),
                 fill: new Fill({
                   color: "#fff",
@@ -233,7 +186,7 @@ export default {
           if (size > clusterSourceFrance.getFeatures().length / 10) {
             style = new Style({
               image: new CircleStyle({
-                radius: 20,
+                radius: 15 + 0.8 * size,
                 stroke: new Stroke({
                   color: "#fff",
                 }),
@@ -242,6 +195,29 @@ export default {
                 }),
               }),
               text: new Text({
+                font: size * 1 + 10 + "px sans-serif",
+                text: size.toString(),
+                fill: new Fill({
+                  color: "#fff",
+                }),
+              }),
+            });
+            styleCache[size] = style;
+          }
+          if (size > clusterSourceFrance.getFeatures().length / 5) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: size < 30 ? 15 + 0.8 * size : 15 + 0.5 * size,
+                radius: 15 + 0.8 * size,
+                stroke: new Stroke({
+                  color: "#fff",
+                }),
+                fill: new Fill({
+                  color: "red",
+                }),
+              }),
+              text: new Text({
+                font: size * 0.8 + 10 + "px sans-serif",
                 text: size.toString(),
                 fill: new Fill({
                   color: "#fff",
@@ -273,6 +249,7 @@ export default {
       });
       const raster = new TileLayer({
         source: new OSM(),
+        title: "Carte",
       });
       const map = new Map({
         controls: defaultControls().extend([
@@ -294,8 +271,14 @@ export default {
       map.on("singleclick", this.onFeatureClicked);
       map.on("pointermove", this.onFeatureHovered);
 
-      this.$store.dispatch("LOAD_FEATURES", clusterSourceFrance.getFeatures());
-      console.log(clusterSourceFrance.getFeatures().length);
+      //!!! Unknow components on array_ !!!!
+      // this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_);
+      // console.log(map.getLayers().array_);
+
+      this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_[1]);
+
+      // console.log(map.getLayers().array_.map((layer) => layer.get("title")));
+      console.log(map.getLayers().array_); // récupération de tout les layers de l'app, qui contiennent les sources, les features...
 
       this.view = view;
       this.map = map;
@@ -326,48 +309,4 @@ export default {
 #nav a.router-link-exact-active {
   color: #42b983;
 }
-
-/* .ol-popup {
-  position: absolute;
-  background-color: white;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  padding: 15px;
-  border-radius: 10px;
-  border: 1px solid #cccccc;
-  bottom: 12px;
-  left: -50px;
-  min-width: 280px;
-}
-.ol-popup:after,
-.ol-popup:before {
-  top: 100%;
-  border: solid transparent;
-  content: " ";
-  height: 0;
-  width: 0;
-  position: absolute;
-  pointer-events: none;
-}
-.ol-popup:after {
-  border-top-color: white;
-  border-width: 10px;
-  left: 48px;
-  margin-left: -10px;
-}
-.ol-popup:before {
-  border-top-color: #cccccc;
-  border-width: 11px;
-  left: 48px;
-  margin-left: -11px;
-}
-.ol-popup-closer {
-  text-decoration: none;
-  position: absolute;
-  top: 2px;
-  right: 8px;
-}
-.ol-popup-closer:after {
-  content: "✖";
-  font-size: 25px;
-} */
 </style>

@@ -3,8 +3,6 @@
     v-if="this.$store.getters.GET_LOADING_STATE_MAP === true"
     class="d-flex align-items-center justify-content-center loader-page"
   >
-    <!-- <div class="spinner-border" role="status"></div>
-    <span class="sr-only ps-2">Chargement de la carte...</span> -->
     <Loader />
   </div>
   <div v-else class="map">
