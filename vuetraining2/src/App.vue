@@ -1,14 +1,16 @@
 <template>
   <div id="nav">
-    <navbar />
+    <Navbar />
+    <FetchGeoJSON />
   </div>
   <router-view />
 </template>
 
 <script>
+import FetchGeoJSON from "@/components/map/FetchGeoJSON.vue";
 import Navbar from "@/views/Navbar.vue";
 export default {
-  components: { Navbar },
+  components: { Navbar, FetchGeoJSON },
 };
 </script>
 
@@ -19,6 +21,7 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+  height: 100vh;
 }
 
 #nav a {
@@ -28,6 +31,10 @@ export default {
 
 #nav a.router-link-exact-active {
   color: #42b983;
+}
+#nav {
+  margin: 0px !important;
+  padding: 0px !important;
 }
 
 @import "~bootstrap/dist/css/bootstrap.css";

@@ -5,24 +5,34 @@ export default createStore({
     featuresList: [],
     featureCoords: [],
     currentSelectedFeature: null,
+    isMapLoading: false,
   },
   //je créé un getters nommé qui sert a "get" les éléments de mon state, ici le nom
   getters: {
     GET_ALLFEATURES(state) {
-      return state.featuresList.flat();
+      return state.featuresList.features;
     },
     GET_SELECTED_FEATURE(state) {
       return state.currentSelectedFeature;
     },
     GET_SELECTED_FEATURE_NAME(state) {
-      return state.currentSelectedFeature.map(
-        (featurename) => featurename.values_.name
-      );
+      if (state.currentSelectedFeature) {
+        return state.currentSelectedFeature.map(
+          (featurename) => featurename.values_.name
+        );
+      }
+      return [];
     },
     GET_SELECTED_FEATURE_INFOS(state) {
-      return state.currentSelectedFeature.map(
-        (featurename) => featurename.values_.population
-      );
+      if (state.currentSelectedFeature) {
+        return state.currentSelectedFeature.map(
+          (featurename) => featurename.values_.population
+        );
+      }
+      return [];
+    },
+    GET_LOADING_STATE_MAP(state) {
+      return state.isMapLoading;
     },
   },
   mutations: {
@@ -32,6 +42,9 @@ export default createStore({
     CHANGE_SELECTED_FEATURE(state, feature) {
       state.currentSelectedFeature = feature;
     },
+    CHANGE_LOADING_STATE(state, isLoading) {
+      state.isMapLoading = isLoading;
+    },
   },
 
   actions: {
@@ -40,6 +53,9 @@ export default createStore({
     },
     SELECT_FEATURE(context, feature) {
       context.commit("CHANGE_SELECTED_FEATURE", feature);
+    },
+    TOGGLE_LOADING(context, isLoading) {
+      context.commit("CHANGE_LOADING_STATE", isLoading);
     },
   },
 });

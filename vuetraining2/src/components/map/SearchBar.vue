@@ -49,7 +49,7 @@
               type="button"
               class="btn btn-primary m-1"
             >
-              {{ feature.values_.name }}
+              {{ feature.properties.name }}
             </button>
           </ul>
         </div>
@@ -69,13 +69,14 @@ export default {
   },
 
   computed: {
-    listedFeatures() {
+    getAllFeatures() {
       return this.$store.getters.GET_ALLFEATURES;
     },
 
     filterByTerm() {
-      return this.listedFeatures.filter((feature) => {
-        return feature.values_.name
+      if (!this.getAllFeatures) return [];
+      return this.getAllFeatures.filter((feature) => {
+        return feature.properties.name
           .toLowerCase()
           .includes(this.searchInput.toLowerCase());
       });
@@ -89,9 +90,8 @@ export default {
   methods: {
     storeFeature(index) {
       this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
-      this.$emit("onListFeatureClicked");
-
       console.log(this.filterByTerm[index]);
+      this.$emit("onListFeatureClicked");
     },
 
     resetInput() {
@@ -121,5 +121,9 @@ export default {
   background-color: rgba(254, 254, 254, 0.5);
   border: 1px solid grey;
   padding: 4px;
+}
+#features-list {
+  max-height: 50vh !important;
+  overflow-y: scroll !important;
 }
 </style>

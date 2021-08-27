@@ -11,9 +11,13 @@
       v-on:click="closePopup"
     >
     </a>
-    <div id="popup-content">
+    <Popup @getSelectedFeature="getSelectedFeature" />
+    <!-- <div id="popup-content">
       <p v-if="getSelectedFeature">
-        <span>Ville : </span>
+        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
+          >Villes :
+        </span>
+        <span v-else>Ville : </span>
         <span
           v-for="(featuresname, index) in this.$store.getters
             .GET_SELECTED_FEATURE_NAME"
@@ -56,12 +60,13 @@
           >
         </span>
       </p>
-    </div>
+    </div>-->
   </div>
 </template>
 <script>
 import SearchBar from "@/components/map/SearchBar.vue";
 import ResetViewButton from "@/components/map/ResetViewButton.vue";
+import Popup from "@/components/map/Popup.vue";
 
 /* eslint-disable */
 // import openlayer css for style
@@ -80,7 +85,6 @@ import {
   OverviewMap,
 } from "ol/control";
 import GeoJSON from "ol/format/GeoJSON";
-// import buildingsData from "./france.geojson";
 
 import Overlay from "ol/Overlay";
 import { fromLonLat } from "ol/proj";
@@ -88,12 +92,12 @@ import { Tile as TileLayer, Vector as VectorLayer } from "ol/layer";
 import { Cluster, OSM, Vector as VectorSource } from "ol/source";
 import { ZoomSlider } from "ol/control";
 import { defaults as defaultInteractions } from "ol/interaction";
-import { toulouse, lyon, paris } from "./Features";
 
 export default {
   components: {
     SearchBar,
     ResetViewButton,
+    Popup,
   },
 
   computed: {
@@ -116,12 +120,11 @@ export default {
 
   methods: {
     onListFeatureClicked() {
-      const point = this.$store.getters.GET_SELECTED_FEATURE[0].getGeometry();
-      this.view.fit(point, {
-        minResolution: 100,
-        duration: 1000,
-      });
-      false;
+      const point = this.$store.getters.GET_SELECTED_FEATURE[0].geometry
+        .coordinates;
+      console.log(point);
+      this.map.getView().setCenter(transform(point, "EPSG:4326", "EPSG:3857"));
+      this.map.getView().setZoom(20);
     },
 
     onFeatureClicked(e) {
@@ -186,10 +189,11 @@ export default {
 
     initiateMap() {
       const clusterSourceFrance = new VectorSource({
-        // features: [toulouse, paris, lyon],
+        // features: new GeoJSON().readFeatures(geojsonObject, {
+        //   dataProjection: "EPSG:4326",
+        //   featureProjection: "EPSG:3857",
+        url: "http://localhost:8080/france.geojson",
         format: new GeoJSON(),
-        url: "./data/france.geojson",
-        // features: new GeoJSON().readFeatures(geojsonObject),
       });
 
       ///---  clustering --- //
@@ -226,7 +230,7 @@ export default {
             styleCache[size] = style;
           }
 
-          if (size > clusterSourceFrance.getFeatures().length / 2) {
+          if (size > clusterSourceFrance.getFeatures().length / 10) {
             style = new Style({
               image: new CircleStyle({
                 radius: 20,
@@ -323,7 +327,7 @@ export default {
   color: #42b983;
 }
 
-.ol-popup {
+/* .ol-popup {
   position: absolute;
   background-color: white;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
@@ -365,5 +369,5 @@ export default {
 .ol-popup-closer:after {
   content: "✖";
   font-size: 25px;
-}
+} */
 </style>
