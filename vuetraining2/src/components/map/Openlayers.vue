@@ -44,8 +44,6 @@ import { Cluster, OSM, Vector as VectorSource } from "ol/source";
 import { ZoomSlider } from "ol/control";
 import { defaults as defaultInteractions } from "ol/interaction";
 
-import BaseObject from "ol/Object";
-
 export default {
   components: {
     SearchBar,
@@ -146,21 +144,33 @@ export default {
         format: new GeoJSON(),
       });
 
-      ///---  clustering --- //
-      const newCluster = new Cluster({
+      const clusterSourceGermany = new VectorSource({
+        url: "http://localhost:8080/germany.geojson",
+        format: new GeoJSON(),
+      });
+
+      // /---  clustering --- //
+      const clusterFrance = new Cluster({
         distance: 30,
         minDistance: 30,
         source: clusterSourceFrance,
       });
-      const styleCache = {};
 
-      const clusters = new VectorLayer({
+      const clusterGermany = new Cluster({
+        distance: 30,
+        minDistance: 30,
+        source: clusterSourceGermany,
+      });
+
+      const styleCacheFR = {};
+
+      const clustersLayerFrance = new VectorLayer({
         title: "France",
-        source: newCluster,
+        source: clusterFrance,
         style: function(feature) {
           const size = feature.get("features").length;
 
-          let style = styleCache[size];
+          let style = styleCacheFR[size];
           if (!style) {
             style = new Style({
               image: new CircleStyle({
@@ -169,7 +179,7 @@ export default {
                   color: "#fff",
                 }),
                 fill: new Fill({
-                  color: "#3399CC",
+                  color: "#C0B298",
                 }),
               }),
               text: new Text({
@@ -180,7 +190,7 @@ export default {
                 }),
               }),
             });
-            styleCache[size] = style;
+            styleCacheFR[size] = style;
           }
 
           if (size > clusterSourceFrance.getFeatures().length / 10) {
@@ -191,7 +201,7 @@ export default {
                   color: "#fff",
                 }),
                 fill: new Fill({
-                  color: "#cc6633",
+                  color: "#A4778B",
                 }),
               }),
               text: new Text({
@@ -202,7 +212,7 @@ export default {
                 }),
               }),
             });
-            styleCache[size] = style;
+            styleCacheFR[size] = style;
           }
           if (size > clusterSourceFrance.getFeatures().length / 5) {
             style = new Style({
@@ -213,7 +223,7 @@ export default {
                   color: "#fff",
                 }),
                 fill: new Fill({
-                  color: "red",
+                  color: "#AA4586",
                 }),
               }),
               text: new Text({
@@ -224,7 +234,86 @@ export default {
                 }),
               }),
             });
-            styleCache[size] = style;
+            styleCacheFR[size] = style;
+          }
+
+          return style;
+        },
+      });
+
+      const styleCacheGER = {};
+
+      const clustersLayerGermany = new VectorLayer({
+        title: "Germany",
+        source: clusterGermany,
+        style: function(feature) {
+          const size = feature.get("features").length;
+
+          let style = styleCacheGER[size];
+          if (!style) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: 15 + 1 * size,
+                stroke: new Stroke({
+                  color: "#fff",
+                }),
+                fill: new Fill({
+                  color: "#50C5B7",
+                }),
+              }),
+              text: new Text({
+                font: size * 1 + 10 + "px sans-serif",
+                text: size.toString(),
+                fill: new Fill({
+                  color: "#fff",
+                }),
+              }),
+            });
+            styleCacheGER[size] = style;
+          }
+
+          if (size > clusterSourceGermany.getFeatures().length / 10) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: 15 + 0.8 * size,
+                stroke: new Stroke({
+                  color: "#fff",
+                }),
+                fill: new Fill({
+                  color: "#6184D8",
+                }),
+              }),
+              text: new Text({
+                font: size * 1 + 10 + "px sans-serif",
+                text: size.toString(),
+                fill: new Fill({
+                  color: "#fff",
+                }),
+              }),
+            });
+            styleCacheGER[size] = style;
+          }
+          if (size > clusterSourceGermany.getFeatures().length / 5) {
+            style = new Style({
+              image: new CircleStyle({
+                radius: size < 30 ? 15 + 0.8 * size : 15 + 0.5 * size,
+                radius: 15 + 0.8 * size,
+                stroke: new Stroke({
+                  color: "#fff",
+                }),
+                fill: new Fill({
+                  color: "#533A71",
+                }),
+              }),
+              text: new Text({
+                font: size * 0.8 + 10 + "px sans-serif",
+                text: size.toString(),
+                fill: new Fill({
+                  color: "#fff",
+                }),
+              }),
+            });
+            styleCacheGER[size] = style;
           }
 
           return style;
@@ -261,7 +350,7 @@ export default {
         interactions: defaultInteractions({ doubleClickZoom: false }), // disabled double click zoom on map
         overlays: [overlay],
         target: "map",
-        layers: [raster, clusters],
+        layers: [raster, clustersLayerFrance, clustersLayerGermany],
         view: view,
       });
       // --- zoom slider ---///
@@ -275,10 +364,7 @@ export default {
       // this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_);
       // console.log(map.getLayers().array_);
 
-      this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_[1]);
-
-      // console.log(map.getLayers().array_.map((layer) => layer.get("title")));
-      console.log(map.getLayers().array_); // récupération de tout les layers de l'app, qui contiennent les sources, les features...
+      // this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_[1]);
 
       this.view = view;
       this.map = map;

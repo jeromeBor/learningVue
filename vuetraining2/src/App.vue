@@ -7,7 +7,7 @@
 </template>
 
 <script>
-import FetchGeoJSON from "@/components/map/FetchGeoJSON.vue";
+import FetchGeoJSON from "@/components/map/API/FetchGeoJSON.vue";
 import Navbar from "@/views/Navbar.vue";
 export default {
   components: { Navbar, FetchGeoJSON },

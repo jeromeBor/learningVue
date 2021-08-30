@@ -11,7 +11,7 @@ export default createStore({
   //je créé un getters nommé qui sert a "get" les éléments de mon state, ici le nom
   getters: {
     GET_ALLFEATURES(state) {
-      return state.featuresList.features;
+      return state.featuresList[0];
     },
     GET_SELECTED_FEATURE(state) {
       return state.currentSelectedFeature;
@@ -42,7 +42,7 @@ export default createStore({
 
   mutations: {
     ADD_FEATURES(state, features) {
-      state.featuresList = features;
+      state.featuresList.push(features);
     },
     CHANGE_SELECTED_FEATURE(state, feature) {
       state.currentSelectedFeature = feature;
