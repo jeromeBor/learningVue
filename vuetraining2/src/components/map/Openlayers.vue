@@ -71,9 +71,11 @@ export default {
 
   methods: {
     onListFeatureClicked() {
-      const point = this.$store.getters.GET_SELECTED_FEATURE[0].geometry
+      const point = this.$store.getters.GET_SELECTED_FEATURE[0].properties
         .coordinates;
-      console.log(point);
+      console.log(
+        this.$store.getters.GET_SELECTED_FEATURE[0].properties.coordinates
+      );
       this.map.getView().setCenter(transform(point, "EPSG:4326", "EPSG:3857"));
       this.map.getView().setZoom(15);
     },

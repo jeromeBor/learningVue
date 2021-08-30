@@ -19,7 +19,7 @@ export default createStore({
     GET_SELECTED_FEATURE_NAME(state) {
       if (state.currentSelectedFeature) {
         return state.currentSelectedFeature.map(
-          (featurename) => featurename.values_.name
+          (featurename) => featurename.properties.name
         );
       }
       return [];
@@ -27,7 +27,7 @@ export default createStore({
     GET_SELECTED_FEATURE_INFOS(state) {
       if (state.currentSelectedFeature) {
         return state.currentSelectedFeature.map(
-          (featurename) => featurename.values_.population
+          (featurename) => featurename.properties.population
         );
       }
       return [];

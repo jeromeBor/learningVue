@@ -90,10 +90,7 @@
               X
             </button>
           </div>
-          <SearchAutocomplete
-            :features="filterByTerm"
-            @onListFeatureClicked="onListFeatureClicked"
-          />
+
           <ul class="list-group" id="features-list">
             <li
               v-for="(feature, index) in filterByTerm"
@@ -112,14 +109,10 @@
 </template>
 
 <script>
-import SearchAutocomplete from "@/components/map/SearchAutocomplete.vue";
-
 export default {
   name: "MapPanel",
 
-  components: {
-    SearchAutocomplete,
-  },
+  components: {},
 
   data() {
     return {
@@ -158,11 +151,11 @@ export default {
       }
     },
 
-    // storeFeature(index) {
-    //   this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
-    //   console.log(this.filterByTerm[index]);
-    //   this.$emit("onListFeatureClicked");
-    // },
+    storeFeature(index) {
+      this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
+      console.log(this.filterByTerm[index]);
+      this.$emit("onListFeatureClicked");
+    },
 
     resetInput() {
       this.searchInput = "";
