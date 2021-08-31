@@ -3,12 +3,12 @@ import { createStore } from "vuex";
 export default createStore({
   state: {
     featuresList: [],
+    filteredFeaturesList: [],
     featureCoords: [],
     currentSelectedFeature: null,
     isMapLoading: false,
     layers: [],
   },
-  //je créé un getters nommé qui sert a "get" les éléments de mon state, ici le nom
   getters: {
     GET_ALLFEATURES(state) {
       return state.featuresList[0];
@@ -19,7 +19,7 @@ export default createStore({
     GET_SELECTED_FEATURE_NAME(state) {
       if (state.currentSelectedFeature) {
         return state.currentSelectedFeature.map(
-          (featurename) => featurename.properties.name
+          (featurename) => featurename.values_.name
         );
       }
       return [];
@@ -27,7 +27,7 @@ export default createStore({
     GET_SELECTED_FEATURE_INFOS(state) {
       if (state.currentSelectedFeature) {
         return state.currentSelectedFeature.map(
-          (featurename) => featurename.properties.population
+          (featurename) => featurename.values_.population
         );
       }
       return [];
@@ -53,6 +53,9 @@ export default createStore({
     ADD_LAYERS(state, layers) {
       state.layers = layers;
     },
+    ADD_FILTERED_FEATURES(state, features) {
+      state.filteredFeaturesList = features;
+    },
   },
 
   actions: {
@@ -67,6 +70,9 @@ export default createStore({
     },
     LOAD_LAYERS(context, layers) {
       context.commit("ADD_LAYERS", layers);
+    },
+    LOAD_FILTERED_FEATURE(context, features) {
+      context.commit("ADD_FILTERED_FEATURES", features);
     },
   },
 });

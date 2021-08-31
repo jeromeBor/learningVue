@@ -71,11 +71,9 @@ export default {
 
   methods: {
     onListFeatureClicked() {
-      const point = this.$store.getters.GET_SELECTED_FEATURE[0].properties
+      const point = this.$store.getters.GET_SELECTED_FEATURE[0].geometry
         .coordinates;
-      console.log(
-        this.$store.getters.GET_SELECTED_FEATURE[0].properties.coordinates
-      );
+      console.log(point);
       this.map.getView().setCenter(transform(point, "EPSG:4326", "EPSG:3857"));
       this.map.getView().setZoom(15);
     },
@@ -159,7 +157,7 @@ export default {
       });
 
       const clusterGermany = new Cluster({
-        distance: 30,
+        distance: 30, // ajouter var size !
         minDistance: 30,
         source: clusterSourceGermany,
       });
@@ -198,7 +196,7 @@ export default {
           if (size > clusterSourceFrance.getFeatures().length / 10) {
             style = new Style({
               image: new CircleStyle({
-                radius: 15 + 0.8 * size,
+                radius: 10 + 1 * size,
                 stroke: new Stroke({
                   color: "#fff",
                 }),
@@ -219,8 +217,7 @@ export default {
           if (size > clusterSourceFrance.getFeatures().length / 5) {
             style = new Style({
               image: new CircleStyle({
-                radius: size < 30 ? 15 + 0.8 * size : 15 + 0.5 * size,
-                radius: 15 + 0.8 * size,
+                radius: 15 + 0.5 * size,
                 stroke: new Stroke({
                   color: "#fff",
                 }),
@@ -355,22 +352,53 @@ export default {
         layers: [raster, clustersLayerFrance, clustersLayerGermany],
         view: view,
       });
+
       // --- zoom slider ---///
       const zoomslider = new ZoomSlider();
       map.addControl(zoomslider);
 
+      // map mouse trigger
       map.on("singleclick", this.onFeatureClicked);
       map.on("pointermove", this.onFeatureHovered);
 
-      //!!! Unknow components on array_ !!!!
-      // this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_);
-      // console.log(map.getLayers().array_);
-
-      // this.$store.dispatch("LOAD_LAYERS", map.getLayers().array_[1]);
-
+      // global var
       this.view = view;
       this.map = map;
       this.overlay = overlay;
+
+      this.$store.state.filteredFeaturesList = this.$store.state.featuresList;
+
+      // FILTER FEATURES
+      // hide overlayer by country layer
+      const layerSelect = document.getElementById("layerSelector");
+      layerSelect.addEventListener("change", function() {
+        clustersLayerFrance.setVisible(false);
+        clustersLayerGermany.setVisible(false);
+        switch (layerSelect.value) {
+          case "Allemagne":
+            clustersLayerGermany.setVisible(true);
+            console.log("all");
+            // const newFilteredFeatures = this.$store.state.fileterdFeaturesList.filter((feature) => feature.properties.label_en === "Germany");
+            // this.$store.dispatch("LOAD_FILTERED_FEATURE, filteredFeatures")
+            break;
+          case "France":
+            clustersLayerFrance.setVisible(true);
+            console.log("fr");
+            // const newFilteredFeatures = this.$store.state.fileterdFeaturesList.filter((feature) => feature.properties.label_en === "France");
+            // this.$store.dispatch("LOAD_FILTERED_FEATURE, filteredFeatures")
+            break;
+          case "All":
+            clustersLayerFrance.setVisible(true);
+            clustersLayerGermany.setVisible(true);
+            break;
+        }
+      });
+
+      // hide features by feature code
+      const featureCodeSelect = document.getElementById("radioFeatureCode"); // do stuff
+      featureCodeSelect.addEventListener("change", function() {
+        // do stuff
+      });
     },
   },
 };
