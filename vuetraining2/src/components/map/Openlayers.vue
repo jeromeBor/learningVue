@@ -53,8 +53,11 @@ export default {
     getFilteredFeaturesList() {
       return this.$store.state.filteredFeaturesList;
     },
-    getSelectedCountry() {
-      return this.$store.state.currentSelectedCountry;
+    currentSelectedFilterOptions() {
+      return this.$store.state.currentSelectionOptions.layer;
+    },
+    getSelectedRadioFilter() {
+      return this.$store.getters.GET_SELECTED_RADIO_FILTER;
     },
     countriesData() {
       return this.$store.getters.GET_COUNTRIES_DATA;
@@ -75,35 +78,35 @@ export default {
   },
 
   watch: {
-    getSelectedCountry: function(country) {
-      this.toggleLayerVisibility(country);
+    currentSelectedFilterOptions: function(selection) {
+      this.toggleLayerVisibility(selection);
+    },
+    getSelectedRadioFilter() {
+      this.filterFeatureByFeatureCode();
     },
   },
 
   methods: {
-    toggleLayerVisibility(country) {
-      const layers = this.map.getLayers();
-      // let savedState = this.$store.state.filteredFeaturesList[0];
-      layers.array_.forEach((layer) => {
+    filterFeatureByFeatureCode() {},
+
+    toggleLayerVisibility(selection) {
+      this.map.getLayers().array_.forEach((layer) => {
         // hide all layers except basic map
-        if (layer.get("id") != "raster") {
-          // show selected country
-          if (layer.get("id") === "villes-" + country) {
+        // show selected
+        console.log(selection);
+        console.log(layer.get("id"));
+        const current_layer_id = layer.get("id");
+        if (current_layer_id.includes("villes-")) {
+          if (selection === "All") {
             layer.setVisible(true);
-            // this.$store.state.filteredFeaturesList[0] = this.$store.state.filteredFeaturesList[0].filter(
-            //   (feature) => feature.properties.cou_name_en === country
-            // );
           } else {
-            layer.setVisible(false);
+            if (layer.get("id") === "villes-" + selection) {
+              layer.setVisible(true);
+            } else {
+              layer.setVisible(false);
+            }
           }
         }
-      });
-    },
-
-    filterByFeatureCode() {
-      debugger;
-      this.clusters.forEachFeatureInExtent(extent, function(feature) {
-        console.log(feature);
       });
     },
 
@@ -122,6 +125,8 @@ export default {
           return clickedFeature;
         }
       );
+      console.log(clickedFeature);
+
       if (clickedFeature) {
         this.view.fit(clickedFeature.getGeometry(), {
           minResolution: 100,

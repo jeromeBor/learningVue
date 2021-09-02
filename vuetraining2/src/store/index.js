@@ -8,8 +8,13 @@ export default createStore({
     selectedFeatures: null,
     currentSelectedFeature: null,
     isMapLoading: false,
-    currentSelectedCountry: "all", // down drop layer filter
-    currentSelectedRadioFilter: "all",
+    // currentSelectedCountry: "all", // down drop layer filter
+    // currentSelectedRadioFilter: "all",
+    currentSelectionOptions: {
+      layer: "All",
+      code: "All",
+      search: null,
+    },
     countriesData: [
       {
         id: "france",
@@ -67,8 +72,8 @@ export default createStore({
       return state.isMapLoading;
     },
     //LAYER FILTER SELECTION
-    GET_SELECTED_COUNTRY(state) {
-      return state.currentSelectedCountry;
+    GET_CURRENT_FILTER_OPTIONS(state) {
+      return state.currentSelectionOptions;
     },
   },
 
@@ -88,8 +93,14 @@ export default createStore({
     ADD_FILTERED_FEATURES(state, features) {
       state.filteredFeaturesList = features;
     },
-    CHANGE_SELECTED_COUNTRY(state, country) {
-      state.currentSelectedCountry = country;
+    CHANGE_SELECTED_LAYER_VALUE(state, selection) {
+      state.currentSelectionOptions.layer = selection;
+    },
+    CHANGE_SELECTED_RADIO_VALUE(state, selection) {
+      state.currentSelectionOptions.code = selection;
+    },
+    CHANGE_SELECTED_INPUT_VALUE(state, input) {
+      state.currentSelectionOptions.search = input;
     },
   },
 
@@ -106,11 +117,21 @@ export default createStore({
     LOAD_LAYERS(context, layers) {
       context.commit("ADD_LAYERS", layers);
     },
+    // ADD FILTERED FEATURE TO STATE
     LOAD_FILTERED_FEATURES(context, features) {
       context.commit("ADD_FILTERED_FEATURES", features);
     },
-    CHANGE_CURRENT_COUNTRY(context, country) {
-      context.commit("CHANGE_SELECTED_COUNTRY", country);
+    // drop down filter layer
+    CHANGE_CURRENT_LAYER_FILTER(context, selection) {
+      context.commit("CHANGE_SELECTED_LAYER_VALUE", selection);
+    },
+    // radio select filter
+    CHANGE_CURRENT_RADIO_FILTER(context, selection) {
+      context.commit("CHANGE_SELECTED_RADIO_VALUE", selection);
+    },
+    // search bar filter
+    CHANGE_CURRENT_INPUT_FILTER(context, input) {
+      context.commit("CHANGE_SELECTED_INPUT_VALUE", input);
     },
   },
 });

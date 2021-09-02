@@ -27,8 +27,8 @@
         <div class="accordion-body">
           <RadioButton @filterByFeatureCode="filterByFeatureCode" />
           <hr />
-          <!-- <DropDown /> -->
-          <select
+          <DropDown @filterFeatureByCountry="filterFeatureByCountry" />
+          <!-- <select
             @change="filterFeatureByCountry"
             v-model="selectedCountry"
             id="layerSelector"
@@ -40,7 +40,7 @@
             >
             <option value="Germany">Allemagne</option>
             <option value="France">France</option>
-          </select>
+          </select> -->
           <hr />
 
           <div class="w-auto d-flex flex-row m-1">
@@ -79,11 +79,12 @@
 
 <script>
 import RadioButton from "@/components/searchPanel/RadioButton.vue";
+import DropDown from "@/components/searchPanel/DropDown.vue";
 
 export default {
   name: "MapPanel",
 
-  components: { RadioButton },
+  components: { RadioButton, DropDown },
   data() {
     return {
       searchInput: "",
@@ -91,30 +92,47 @@ export default {
     };
   },
 
+  // watching
+  watch: {
+    currentSelectedLayerOptions: function(options) {
+      this.filterByLayer(options);
+    },
+  },
+
   computed: {
+    // retrieve current options for layer
+    currentSelectedLayerOptions() {
+      return this.$store.state.currentSelectionOptions.layer;
+    },
+
+    // récupération de toutes mes features
     getAllFeatures() {
       return this.$store.getters.GET_ALLFEATURES;
     },
+
     filterByTerm() {
       if (!this.getAllFeatures) return [];
+      this.$store.dispatch("CHANGE_CURRENT_INPUT_FILTER", this.searchInput);
       return this.getAllFeatures.filter((feature) => {
         return feature.properties.name
           .toLowerCase()
           .includes(this.searchInput.toLowerCase());
       });
     },
-    selectedFeature() {
-      return this.$store.getters.GET_SELECTED_FEATURE;
-    },
-  },
-
-  watch: {
-    selectedCountry: function(country) {
-      this.$store.dispatch("CHANGE_CURRENT_COUNTRY", country);
-    },
   },
 
   methods: {
+    filterByLayer() {
+      if (this.currentSelectedLayerOptions != "All") {
+        const filteredFeatureByLayer = this.getAllFeatures.filter(
+          (feature) =>
+            feature.properties.cou_name_en === this.currentSelectedLayerOptions
+        );
+        this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByLayer);
+        return filteredFeatureByLayer;
+      }
+    },
+
     toggleButtonList() {
       var btn = document.getElementById("collapsible");
       if (btn.value === "off") {

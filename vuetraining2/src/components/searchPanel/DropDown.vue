@@ -1,5 +1,6 @@
 <template>
   <select
+    @change="filterFeatureByCountry"
     v-model="selectedCountry"
     id="layerSelector"
     class="form-select p-2 mb-3 fs-6"
@@ -8,7 +9,7 @@
     <option value="All" selected class="fw-bold text-primary"
       >Choisir un pays (étage)</option
     >
-    <option value="Allemagne">Allemagne</option>
+    <option value="Germany">Allemagne</option>
     <option value="France">France</option>
   </select>
 </template>
@@ -24,8 +25,8 @@ export default {
   },
 
   watch: {
-    selectedCountry: function(country) {
-      this.$store.dispatch("CHANGE_CURRENT_COUNTRY", country);
+    selectedCountry: function(selection) {
+      this.$store.dispatch("CHANGE_CURRENT_LAYER_FILTER", selection);
     },
   },
 };
