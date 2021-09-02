@@ -1,52 +1,61 @@
 <template>
-  <div id="popup-content">
-    <p v-if="getSelectedFeature">
-      <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
-        >Villes :
-      </span>
-      <span v-else>Ville : </span>
-      <span
-        v-for="(featuresname, index) in this.$store.getters
-          .GET_SELECTED_FEATURE_NAME"
-        :key="featuresname"
-      >
-        <code v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
-          >{{ featuresname
-          }}<span
-            v-if="
-              index + 1 < this.$store.getters.GET_SELECTED_FEATURE_NAME.length
-            "
-            >,
-          </span>
-        </code>
-        <code v-else>
-          {{ featuresname }}
-        </code>
-      </span>
-      <br />
-      <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1">
-        Population totale :
-        <code>
-          {{
-            this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
-              (a, b) => a + b,
-              0
-            )
-          }}</code
+  <div id="popup" class="ol-popup">
+    <a
+      href="#"
+      id="popup-closer"
+      class="ol-popup-closer"
+      v-on:click="closePopup"
+    >
+    </a>
+    <div id="popup-content">
+      <p v-if="getSelectedFeature">
+        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
+          >Villes :
+        </span>
+        <span v-else>Ville : </span>
+        <span
+          v-for="(featuresname, index) in this.$store.getters
+            .GET_SELECTED_FEATURE_NAME"
+          :key="featuresname"
         >
-      </span>
-      <span v-else>
-        Population :
-        <code>
-          {{
-            this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
-              (a, b) => a + b,
-              0
-            )
-          }}</code
-        >
-      </span>
-    </p>
+          <code v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1"
+            >{{ featuresname
+            }}<span
+              v-if="
+                index + 1 < this.$store.getters.GET_SELECTED_FEATURE_NAME.length
+              "
+              >,
+            </span>
+          </code>
+          <code v-else>
+            {{ featuresname }}
+          </code>
+        </span>
+        <br />
+        <span v-if="this.$store.getters.GET_SELECTED_FEATURE_NAME.length > 1">
+          Population totale :
+          <code>
+            {{
+              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
+                (a, b) => a + b,
+                0
+              )
+            }}</code
+          >
+        </span>
+        <span v-else>
+          Population :
+          <code>
+            {{
+              this.$store.getters.GET_SELECTED_FEATURE_INFOS.reduce(
+                (a, b) => a + b,
+                0
+              )
+            }}</code
+          >
+        </span>
+      </p>
+    </div>
   </div>
 </template>
 

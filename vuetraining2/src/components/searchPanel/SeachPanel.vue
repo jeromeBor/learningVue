@@ -25,47 +25,12 @@
         data-bs-parent="#accordionExample"
       >
         <div class="accordion-body">
-          <div id="radioFeatureCode" class="filtercat bg-white p-2 mb-3">
-            <span class="fs-6 fw-bold text-primary">Feature code</span>
-            <div class="form-check text-start">
-              <input
-                class="form-check-input "
-                type="radio"
-                name="flexRadioDefault"
-                id="allFeatureRadio"
-              />
-              <label class="form-check-label" for="allFeatureRadio">
-                Tout
-              </label>
-            </div>
-            <div class="form-check text-start">
-              <input
-                class="form-check-input "
-                type="radio"
-                name="flexRadioDefault"
-                id="PPLAFeatureRadio"
-              />
-              <label class="form-check-label" for="PPLAFeatureRadio">
-                PPLA
-              </label>
-            </div>
-            <div class="form-check text-start">
-              <input
-                class="form-check-input"
-                type="radio"
-                name="flexRadioDefault"
-                id="PPLA3FeatureRadio"
-                checked
-              />
-              <label class="form-check-label" for="PPLA3FeatureRadio">
-                PPLA 3
-              </label>
-            </div>
-          </div>
+          <RadioButton @filterByFeatureCode="filterByFeatureCode" />
           <hr />
-
+          <!-- <DropDown /> -->
           <select
             @change="filterFeatureByCountry"
+            v-model="selectedCountry"
             id="layerSelector"
             class="form-select p-2 mb-3 fs-6"
             aria-label="Default select example"
@@ -73,7 +38,7 @@
             <option value="All" selected class="fw-bold text-primary"
               >Choisir un pays (étage)</option
             >
-            <option value="Allemagne">Allemagne</option>
+            <option value="Germany">Allemagne</option>
             <option value="France">France</option>
           </select>
           <hr />
@@ -105,6 +70,7 @@
               {{ feature.properties.name }}
             </li>
           </ul>
+          <!-- <SearchBar />  -->
         </div>
       </div>
     </div>
@@ -112,23 +78,16 @@
 </template>
 
 <script>
+import RadioButton from "@/components/searchPanel/RadioButton.vue";
+
 export default {
   name: "MapPanel",
 
-  components: {},
-
+  components: { RadioButton },
   data() {
     return {
       searchInput: "",
-
-      items: [
-        {
-          type: "test1",
-        },
-        {
-          type: "test2",
-        },
-      ],
+      selectedCountry: "All",
     };
   },
 
@@ -136,7 +95,6 @@ export default {
     getAllFeatures() {
       return this.$store.getters.GET_ALLFEATURES;
     },
-
     filterByTerm() {
       if (!this.getAllFeatures) return [];
       return this.getAllFeatures.filter((feature) => {
@@ -145,9 +103,14 @@ export default {
           .includes(this.searchInput.toLowerCase());
       });
     },
-
     selectedFeature() {
       return this.$store.getters.GET_SELECTED_FEATURE;
+    },
+  },
+
+  watch: {
+    selectedCountry: function(country) {
+      this.$store.dispatch("CHANGE_CURRENT_COUNTRY", country);
     },
   },
 

@@ -1,21 +1,16 @@
 <template>
   <div id="map">
-    <SearchBar @onListFeatureClicked="onListFeatureClicked" />
+    <SeachPanel
+      @onListFeatureClicked="onListFeatureClicked"
+      @filterByFeatureCode="filterByFeatureCode"
+    />
     <ResetViewButton @resetView="resetView" />
   </div>
-  <div id="popup" class="ol-popup">
-    <a
-      href="#"
-      id="popup-closer"
-      class="ol-popup-closer"
-      v-on:click="closePopup"
-    >
-    </a>
-    <Popup @getSelectedFeature="getSelectedFeature" />
-  </div>
+
+  <Popup @getSelectedFeature="getSelectedFeature" />
 </template>
 <script>
-import SearchBar from "@/components/map/SearchBar.vue";
+import SeachPanel from "@/components/searchPanel/SeachPanel.vue";
 import ResetViewButton from "@/components/map/ResetViewButton.vue";
 import Popup from "@/components/map/Popup.vue";
 
@@ -46,14 +41,23 @@ import { defaults as defaultInteractions } from "ol/interaction";
 
 export default {
   components: {
-    SearchBar,
+    SeachPanel,
     ResetViewButton,
     Popup,
   },
 
   computed: {
     getSelectedFeature() {
-      return this.$store.getters.GET_SELECTED_FEATURE;
+      return this.$store.state.GET_SELECTED_FEATURE;
+    },
+    getFilteredFeaturesList() {
+      return this.$store.state.filteredFeaturesList;
+    },
+    getSelectedCountry() {
+      return this.$store.state.currentSelectedCountry;
+    },
+    countriesData() {
+      return this.$store.getters.GET_COUNTRIES_DATA;
     },
   },
 
@@ -66,10 +70,43 @@ export default {
       view: null,
       map: null,
       clickedFeature: [],
+      clusters: [],
     };
   },
 
+  watch: {
+    getSelectedCountry: function(country) {
+      this.toggleLayerVisibility(country);
+    },
+  },
+
   methods: {
+    toggleLayerVisibility(country) {
+      const layers = this.map.getLayers();
+      // let savedState = this.$store.state.filteredFeaturesList[0];
+      layers.array_.forEach((layer) => {
+        // hide all layers except basic map
+        if (layer.get("id") != "raster") {
+          // show selected country
+          if (layer.get("id") === "villes-" + country) {
+            layer.setVisible(true);
+            // this.$store.state.filteredFeaturesList[0] = this.$store.state.filteredFeaturesList[0].filter(
+            //   (feature) => feature.properties.cou_name_en === country
+            // );
+          } else {
+            layer.setVisible(false);
+          }
+        }
+      });
+    },
+
+    filterByFeatureCode() {
+      debugger;
+      this.clusters.forEachFeatureInExtent(extent, function(feature) {
+        console.log(feature);
+      });
+    },
+
     onListFeatureClicked() {
       const point = this.$store.getters.GET_SELECTED_FEATURE[0].geometry
         .coordinates;
@@ -126,198 +163,95 @@ export default {
         .setCenter(transform([1.7191, 46.7111], "EPSG:4326", "EPSG:3857"));
       this.map.getView().setZoom(6);
     },
-
     storeHoveredFeature(hoveredFeature) {
       this.$store.dispatch("SELECT_FEATURE", hoveredFeature);
     },
     storeFeature(clickedFeature) {
       this.$store.dispatch("SELECT_FEATURE", clickedFeature);
     },
-
     getAllFeature() {
       return this.$store.getters.GET_ALLFEATURES;
     },
 
     initiateMap() {
-      const clusterSourceFrance = new VectorSource({
-        url: "http://localhost:8080/france.geojson",
-        format: new GeoJSON(),
-      });
-
-      const clusterSourceGermany = new VectorSource({
-        url: "http://localhost:8080/germany.geojson",
-        format: new GeoJSON(),
-      });
-
-      // /---  clustering --- //
-      const clusterFrance = new Cluster({
-        distance: 30,
-        minDistance: 30,
-        source: clusterSourceFrance,
-      });
-
-      const clusterGermany = new Cluster({
-        distance: 30, // ajouter var size !
-        minDistance: 30,
-        source: clusterSourceGermany,
-      });
-
-      const styleCacheFR = {};
-
-      const clustersLayerFrance = new VectorLayer({
-        title: "France",
-        source: clusterFrance,
-        style: function(feature) {
-          const size = feature.get("features").length;
-
-          let style = styleCacheFR[size];
-          if (!style) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: 15 + 1 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#C0B298",
-                }),
-              }),
-              text: new Text({
-                font: size * 1 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheFR[size] = style;
-          }
-
-          if (size > clusterSourceFrance.getFeatures().length / 10) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: 10 + 1 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#A4778B",
-                }),
-              }),
-              text: new Text({
-                font: size * 1 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheFR[size] = style;
-          }
-          if (size > clusterSourceFrance.getFeatures().length / 5) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: 15 + 0.5 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#AA4586",
-                }),
-              }),
-              text: new Text({
-                font: size * 0.8 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheFR[size] = style;
-          }
-
-          return style;
+      const countries = [
+        {
+          id: "France",
+          url: "http://localhost:8080/france.geojson",
+          style: {
+            fillColor1: "#C0B298",
+            fillColor2: "#A4778B",
+            fillColor3: "#AA4586",
+            strokeColor: "#fff",
+            textColor: "#fff",
+            size: {
+              radiusPx: { small: "0.5", medium: "0.8" },
+              fontPx: { small: "0.5", medium: "0.8" },
+            },
+          },
         },
-      });
-
-      const styleCacheGER = {};
-
-      const clustersLayerGermany = new VectorLayer({
-        title: "Germany",
-        source: clusterGermany,
-        style: function(feature) {
-          const size = feature.get("features").length;
-
-          let style = styleCacheGER[size];
-          if (!style) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: 15 + 1 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#50C5B7",
-                }),
-              }),
-              text: new Text({
-                font: size * 1 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheGER[size] = style;
-          }
-
-          if (size > clusterSourceGermany.getFeatures().length / 10) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: 15 + 0.8 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#6184D8",
-                }),
-              }),
-              text: new Text({
-                font: size * 1 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheGER[size] = style;
-          }
-          if (size > clusterSourceGermany.getFeatures().length / 5) {
-            style = new Style({
-              image: new CircleStyle({
-                radius: size < 30 ? 15 + 0.8 * size : 15 + 0.5 * size,
-                radius: 15 + 0.8 * size,
-                stroke: new Stroke({
-                  color: "#fff",
-                }),
-                fill: new Fill({
-                  color: "#533A71",
-                }),
-              }),
-              text: new Text({
-                font: size * 0.8 + 10 + "px sans-serif",
-                text: size.toString(),
-                fill: new Fill({
-                  color: "#fff",
-                }),
-              }),
-            });
-            styleCacheGER[size] = style;
-          }
-
-          return style;
+        {
+          id: "Germany",
+          url: "http://localhost:8080/germany.geojson",
+          style: {
+            fillColor1: "#50C5B7",
+            fillColor2: "#6184D8",
+            fillColor3: "#533A71",
+            strokeColor: "#fff",
+            textColor: "#fff",
+            size: {
+              radiusPx: { small: "0.5", medium: "0.8" },
+              fontPx: { small: "0.5", medium: "0.8" },
+            },
+          },
         },
+      ];
+      const clusters = [];
+      countries.forEach((country) => {
+        const currentId = country.id;
+        const currentUrl = country.url;
+        const currentStyle = country.style;
+        const clusterLayer = new VectorLayer({
+          id: "villes-" + currentId,
+          source: new Cluster({
+            distance: 30,
+            minDistance: 30,
+            source: new VectorSource({
+              url: currentUrl,
+              format: new GeoJSON(),
+            }),
+          }),
+          style: function(feature) {
+            const size = feature.get("features").length;
+            let style = styleCache[size];
+            if (!style) {
+              style = new Style({
+                image: new CircleStyle({
+                  radius: 15 + 0.5 * size,
+                  stroke: new Stroke({
+                    color: currentStyle.strokeColor,
+                  }),
+                  fill: new Fill({
+                    color: currentStyle.fillColor1,
+                  }),
+                }),
+                text: new Text({
+                  font: size * 0.5 + 10 + "px sans-serif",
+                  text: size.toString(),
+                  fill: new Fill({
+                    color: currentStyle.textColor,
+                  }),
+                }),
+              });
+              styleCache[size] = style;
+            }
+            return style;
+          },
+        });
+        clusters.push(clusterLayer);
       });
+
+      const styleCache = {};
 
       //--- POPUP ---//
       const container = document.getElementById("popup");
@@ -337,7 +271,7 @@ export default {
       });
       const raster = new TileLayer({
         source: new OSM(),
-        title: "Carte",
+        id: "raster",
       });
       const map = new Map({
         controls: defaultControls().extend([
@@ -349,7 +283,7 @@ export default {
         interactions: defaultInteractions({ doubleClickZoom: false }), // disabled double click zoom on map
         overlays: [overlay],
         target: "map",
-        layers: [raster, clustersLayerFrance, clustersLayerGermany],
+        layers: [raster, ...clusters],
         view: view,
       });
 
@@ -365,40 +299,7 @@ export default {
       this.view = view;
       this.map = map;
       this.overlay = overlay;
-
       this.$store.state.filteredFeaturesList = this.$store.state.featuresList;
-
-      // FILTER FEATURES
-      // hide overlayer by country layer
-      const layerSelect = document.getElementById("layerSelector");
-      layerSelect.addEventListener("change", function() {
-        clustersLayerFrance.setVisible(false);
-        clustersLayerGermany.setVisible(false);
-        switch (layerSelect.value) {
-          case "Allemagne":
-            clustersLayerGermany.setVisible(true);
-            console.log("all");
-            // const newFilteredFeatures = this.$store.state.fileterdFeaturesList.filter((feature) => feature.properties.label_en === "Germany");
-            // this.$store.dispatch("LOAD_FILTERED_FEATURE, filteredFeatures")
-            break;
-          case "France":
-            clustersLayerFrance.setVisible(true);
-            console.log("fr");
-            // const newFilteredFeatures = this.$store.state.fileterdFeaturesList.filter((feature) => feature.properties.label_en === "France");
-            // this.$store.dispatch("LOAD_FILTERED_FEATURE, filteredFeatures")
-            break;
-          case "All":
-            clustersLayerFrance.setVisible(true);
-            clustersLayerGermany.setVisible(true);
-            break;
-        }
-      });
-
-      // hide features by feature code
-      const featureCodeSelect = document.getElementById("radioFeatureCode"); // do stuff
-      featureCodeSelect.addEventListener("change", function() {
-        // do stuff
-      });
     },
   },
 };
