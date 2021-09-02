@@ -1,9 +1,6 @@
 <template>
   <div id="map">
-    <SeachPanel
-      @onListFeatureClicked="onListFeatureClicked"
-      @filterByFeatureCode="filterByFeatureCode"
-    />
+    <SeachPanel @onListFeatureClicked="onListFeatureClicked" />
     <ResetViewButton @resetView="resetView" />
   </div>
 
@@ -80,21 +77,19 @@ export default {
   watch: {
     currentSelectedFilterOptions: function(selection) {
       this.toggleLayerVisibility(selection);
-    },
-    getSelectedRadioFilter() {
-      this.filterFeatureByFeatureCode();
+      // this.filterFeatureByFeatureCode();
     },
   },
 
   methods: {
-    filterFeatureByFeatureCode() {},
+    // filterFeatureByFeatureCode() {
+    //   console.log(this.map.getLayers().array_);
+    // },
 
     toggleLayerVisibility(selection) {
       this.map.getLayers().array_.forEach((layer) => {
         // hide all layers except basic map
         // show selected
-        console.log(selection);
-        console.log(layer.get("id"));
         const current_layer_id = layer.get("id");
         if (current_layer_id.includes("villes-")) {
           if (selection === "All") {
@@ -109,6 +104,8 @@ export default {
         }
       });
     },
+
+    FilterMapFeature() {},
 
     onListFeatureClicked() {
       const point = this.$store.getters.GET_SELECTED_FEATURE[0].geometry

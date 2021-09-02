@@ -13,7 +13,7 @@ export default createStore({
     currentSelectionOptions: {
       layer: "All",
       code: "All",
-      search: null,
+      term: "",
     },
     countriesData: [
       {
@@ -38,11 +38,11 @@ export default createStore({
   },
   getters: {
     GET_ALLFEATURES(state) {
-      return state.featuresList[0];
+      return state.featuresList.flat();
     },
 
     GET_FILTERED_FEATURES(state) {
-      return state.filteredFeaturesList[0];
+      return state.filteredFeaturesList.flat();
     },
 
     GET_SELECTED_FEATURE(state) {
@@ -99,8 +99,8 @@ export default createStore({
     CHANGE_SELECTED_RADIO_VALUE(state, selection) {
       state.currentSelectionOptions.code = selection;
     },
-    CHANGE_SELECTED_INPUT_VALUE(state, input) {
-      state.currentSelectionOptions.search = input;
+    CHANGE_SELECTED_TERM_VALUE(state, input) {
+      state.currentSelectionOptions.term = input;
     },
   },
 
@@ -130,8 +130,8 @@ export default createStore({
       context.commit("CHANGE_SELECTED_RADIO_VALUE", selection);
     },
     // search bar filter
-    CHANGE_CURRENT_INPUT_FILTER(context, input) {
-      context.commit("CHANGE_SELECTED_INPUT_VALUE", input);
+    CHANGE_CURRENT_TERM_FILTER(context, input) {
+      context.commit("CHANGE_SELECTED_TERM_VALUE", input);
     },
   },
 });

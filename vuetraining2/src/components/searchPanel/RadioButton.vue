@@ -34,14 +34,14 @@
       <input
         v-on:click="updateRadioData"
         v-model="radioFilter"
-        value="PPLA3"
+        value="PPLA2"
         class="form-check-input"
         type="radio"
         name="flexRadioDefault"
         id="PPLA3FeatureRadio"
       />
       <label class="form-check-label" for="PPLA3FeatureRadio">
-        PPLA 3
+        PPLA 2
       </label>
     </div>
   </div>
@@ -49,23 +49,17 @@
 
 <script>
 export default {
+  data() {
+    return {
+      radioFilter: "",
+    };
+  },
+
   methods: {
     updateRadioData(e) {
       this.radioFilter = e.target.value;
       console.log(this.radioFilter);
       this.$store.dispatch("CHANGE_CURRENT_RADIO_FILTER", this.radioFilter);
-    },
-
-    watch: {
-      radioFilter: function() {
-        this.updateRadioData();
-      },
-    },
-
-    data() {
-      return {
-        radioFilter: "",
-      };
     },
   },
 };

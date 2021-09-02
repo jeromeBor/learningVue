@@ -6,8 +6,8 @@ export default {
     getGeoJSONData() {
       axios
         .all([
-          axios.get("http://localhost:8080/germany.geojson", {}),
-          axios.get("http://localhost:8080/france.geojson", {}),
+          axios.get("http://localhost:8080/germany.geojson"),
+          axios.get("http://localhost:8080/france.geojson"),
         ])
         .then(
           axios.spread((...responses) => {

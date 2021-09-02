@@ -25,9 +25,9 @@
         data-bs-parent="#accordionExample"
       >
         <div class="accordion-body">
-          <RadioButton @filterByFeatureCode="filterByFeatureCode" />
+          <RadioButton />
           <hr />
-          <DropDown @filterFeatureByCountry="filterFeatureByCountry" />
+          <DropDown />
           <!-- <select
             @change="filterFeatureByCountry"
             v-model="selectedCountry"
@@ -46,6 +46,7 @@
           <div class="w-auto d-flex flex-row m-1">
             <input
               v-model="searchInput"
+              v-on:input="updateTermFilter"
               type="text"
               class="form-control "
               placeholder="Search"
@@ -61,7 +62,7 @@
           </div>
           <ul class="list-group" id="features-list">
             <li
-              v-for="(feature, index) in filterByTerm"
+              v-for="(feature, index) in getFilteredFeatureList"
               :key="index"
               v-on:click="storeFeature(index)"
               type="button"
@@ -92,46 +93,138 @@ export default {
     };
   },
 
-  // watching
+  // watching state filter option
   watch: {
-    currentSelectedLayerOptions: function(options) {
-      this.filterByLayer(options);
+    currentSelectedLayerOption: function() {
+      this.filteredFeatures();
+    },
+    currentSelectedCodeOption: function() {
+      this.filteredFeatures();
+    },
+    currentSelectedTermOption: function() {
+      this.filteredFeatures();
     },
   },
 
   computed: {
-    // retrieve current options for layer
-    currentSelectedLayerOptions() {
+    // retrieve current option for layer
+    currentSelectedLayerOption() {
       return this.$store.state.currentSelectionOptions.layer;
+    },
+    //retrieve current option for radio  feature code
+    currentSelectedCodeOption() {
+      return this.$store.state.currentSelectionOptions.code;
+    },
+    currentSelectedTermOption() {
+      return this.$store.state.currentSelectionOptions.term;
     },
 
     // récupération de toutes mes features
     getAllFeatures() {
       return this.$store.getters.GET_ALLFEATURES;
     },
-
-    filterByTerm() {
-      if (!this.getAllFeatures) return [];
-      this.$store.dispatch("CHANGE_CURRENT_INPUT_FILTER", this.searchInput);
-      return this.getAllFeatures.filter((feature) => {
-        return feature.properties.name
-          .toLowerCase()
-          .includes(this.searchInput.toLowerCase());
-      });
+    getFilteredFeatureList() {
+      return this.$store.getters.GET_FILTERED_FEATURES;
     },
   },
 
   methods: {
-    filterByLayer() {
-      if (this.currentSelectedLayerOptions != "All") {
-        const filteredFeatureByLayer = this.getAllFeatures.filter(
-          (feature) =>
-            feature.properties.cou_name_en === this.currentSelectedLayerOptions
-        );
-        this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByLayer);
-        return filteredFeatureByLayer;
-      }
+    filteredFeatures() {
+      const filtered = this.getAllFeatures.filter((feature) => {
+        if (
+          this.currentSelectedLayerOption === "All" &&
+          this.currentSelectedCodeOption != "All"
+        ) {
+          console.log("Layer and Terms");
+          if (
+            feature.properties.feature_code ===
+              this.currentSelectedCodeOption &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.currentSelectedTermOption.toLowerCase())
+          )
+            return true;
+        } else if (
+          this.currentSelectedCodeOption === "All" &&
+          this.currentSelectedLayerOption != "All"
+        ) {
+          console.log("Code and Terms");
+          if (
+            feature.properties.cou_name_en ===
+              this.currentSelectedLayerOption &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.currentSelectedTermOption.toLowerCase())
+          )
+            return true;
+        } else if (
+          this.currentSelectedLayerOption == "All" &&
+          this.currentSelectedCodeOption == "All"
+        ) {
+          console.log("Terms only");
+          if (!this.getFilteredFeatureList) return [];
+          return feature.properties.name
+            .toLowerCase()
+            .includes(this.searchInput.toLowerCase());
+        } else {
+          console.log("All filter");
+          if (
+            feature.properties.cou_name_en ===
+              this.currentSelectedLayerOption &&
+            feature.properties.feature_code ===
+              this.currentSelectedCodeOption &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.currentSelectedTermOption.toLowerCase())
+          )
+            return true;
+        }
+      });
+      this.$store.dispatch("LOAD_FILTERED_FEATURES", filtered);
+      return filtered;
     },
+
+    //  filterByTerm() {
+    //     if (!this.getFilteredFeatureList) return [];
+    //     this.$store.dispatch("CHANGE_CURRENT_TERM_FILTER", this.searchInput);
+
+    //     const filteredFeatureByTerm = this.getAllFeatures.filter((feature) => {
+    //       return feature.properties.name
+    //         .toLowerCase()
+    //         .includes(this.searchInput.toLowerCase());
+    //     });
+    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByTerm);
+    //   },
+
+    updateTermFilter(e) {
+      this.searchInput = e.target.value;
+      console.log(this.searchInput);
+      this.$store.dispatch("CHANGE_CURRENT_TERM_FILTER", this.searchInput);
+    },
+
+    // filterByLayer() {
+    //   if (this.currentSelectedLayerOption != "All") {
+    //     const filteredFeatureByLayer = this.getAllFeatures.filter(
+    //       (feature) =>
+    //         feature.properties.cou_name_en === this.currentSelectedLayerOption
+    //     );
+    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByLayer);
+    //     return filteredFeatureByLayer;
+    //   }
+    //   this.$store.dispatch("LOAD_FILTERED_FEATURES", this.getAllFeatures);
+    // },
+
+    // filterByCode() {
+    //   if (this.currentSelectedCodeOption != "All") {
+    //     const filteredFeatureByCode = this.getAllFeatures.filter(
+    //       (feature) =>
+    //         feature.properties.feature_code === this.currentSelectedCodeOption
+    //     );
+    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByCode);
+    //     return filteredFeatureByCode;
+    //   }
+    //   this.$store.dispatch("LOAD_FILTERED_FEATURES", this.getAllFeatures);
+    // },
 
     toggleButtonList() {
       var btn = document.getElementById("collapsible");
@@ -145,8 +238,9 @@ export default {
     },
 
     storeFeature(index) {
-      this.$store.dispatch("SELECT_FEATURE", [this.filterByTerm[index]]);
-      console.log(this.filterByTerm[index]);
+      this.$store.dispatch("SELECT_FEATURE", [
+        this.getFilteredFeatureList[index],
+      ]);
       this.$emit("onListFeatureClicked");
     },
 

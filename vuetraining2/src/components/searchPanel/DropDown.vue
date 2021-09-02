@@ -1,6 +1,5 @@
 <template>
   <select
-    @change="filterFeatureByCountry"
     v-model="selectedCountry"
     id="layerSelector"
     class="form-select p-2 mb-3 fs-6"
