@@ -8,13 +8,13 @@ export default createStore({
     selectedFeatures: null,
     currentSelectedFeature: null,
     isMapLoading: false,
-    // currentSelectedCountry: "all", // down drop layer filter
-    // currentSelectedRadioFilter: "all",
+
     currentSelectionOptions: {
       layer: "All",
       code: "All",
       term: "",
     },
+
     countriesData: [
       {
         id: "france",
@@ -43,6 +43,10 @@ export default createStore({
 
     GET_FILTERED_FEATURES(state) {
       return state.filteredFeaturesList.flat();
+    },
+
+    GET_FILTER_OPTIONS(state) {
+      return state.currentSelectionOptions;
     },
 
     GET_SELECTED_FEATURE(state) {

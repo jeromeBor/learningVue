@@ -58,7 +58,6 @@ export default {
   methods: {
     updateRadioData(e) {
       this.radioFilter = e.target.value;
-      console.log(this.radioFilter);
       this.$store.dispatch("CHANGE_CURRENT_RADIO_FILTER", this.radioFilter);
     },
   },

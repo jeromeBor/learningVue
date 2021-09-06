@@ -28,21 +28,7 @@
           <RadioButton />
           <hr />
           <DropDown />
-          <!-- <select
-            @change="filterFeatureByCountry"
-            v-model="selectedCountry"
-            id="layerSelector"
-            class="form-select p-2 mb-3 fs-6"
-            aria-label="Default select example"
-          >
-            <option value="All" selected class="fw-bold text-primary"
-              >Choisir un pays (étage)</option
-            >
-            <option value="Germany">Allemagne</option>
-            <option value="France">France</option>
-          </select> -->
           <hr />
-
           <div class="w-auto d-flex flex-row m-1">
             <input
               v-model="searchInput"
@@ -71,7 +57,6 @@
               {{ feature.properties.name }}
             </li>
           </ul>
-          <!-- <SearchBar />  -->
         </div>
       </div>
     </div>
@@ -95,14 +80,18 @@ export default {
 
   // watching state filter option
   watch: {
-    currentSelectedLayerOption: function() {
-      this.filteredFeatures();
-    },
-    currentSelectedCodeOption: function() {
-      this.filteredFeatures();
-    },
-    currentSelectedTermOption: function() {
-      this.filteredFeatures();
+    // currentSelectedLayerOption: function() {
+    //   this.filter();
+    // },
+    // currentSelectedCodeOption: function() {
+    //   this.filter();
+    // },
+    // currentSelectedTermOption: function() {
+    //   this.filter();
+    // },
+
+    filteredFeatures: function() {
+      this.$store.dispatch("LOAD_FILTERED_FEATURES", this.filteredFeatures);
     },
   },
 
@@ -126,105 +115,49 @@ export default {
     getFilteredFeatureList() {
       return this.$store.getters.GET_FILTERED_FEATURES;
     },
+    filteredOptions() {
+      return this.$store.getters.GET_FILTER_OPTIONS;
+    },
+
+    filteredFeatures() {
+      return this.getAllFeatures.filter((feature) => {
+        return (
+          // renvoie true si les 2 selection === value
+          (feature.properties.feature_code === this.currentSelectedCodeOption &&
+            feature.properties.cou_name_en ===
+              this.currentSelectedLayerOption &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.searchInput.toLowerCase())) ||
+          // ou si une des selections === value et l'autre === All
+          (this.currentSelectedCodeOption === "All" &&
+            feature.properties.cou_name_en ===
+              this.currentSelectedLayerOption &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.searchInput.toLowerCase())) ||
+          // ou si l'autre selection === value et l'autre == all
+          (feature.properties.feature_code === this.currentSelectedCodeOption &&
+            this.currentSelectedLayerOption === "All" &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.searchInput.toLowerCase())) ||
+          // ou si l'autre selection === value et l'autre == all
+          (this.currentSelectedCodeOption === "All" &&
+            this.currentSelectedLayerOption === "All" &&
+            feature.properties.name
+              .toLowerCase()
+              .includes(this.searchInput.toLowerCase()))
+        );
+      });
+    },
   },
 
   methods: {
-    filteredFeatures() {
-      const filtered = this.getAllFeatures.filter((feature) => {
-        if (
-          this.currentSelectedLayerOption === "All" &&
-          this.currentSelectedCodeOption != "All"
-        ) {
-          console.log("Layer and Terms");
-          if (
-            feature.properties.feature_code ===
-              this.currentSelectedCodeOption &&
-            feature.properties.name
-              .toLowerCase()
-              .includes(this.currentSelectedTermOption.toLowerCase())
-          )
-            return true;
-        } else if (
-          this.currentSelectedCodeOption === "All" &&
-          this.currentSelectedLayerOption != "All"
-        ) {
-          console.log("Code and Terms");
-          if (
-            feature.properties.cou_name_en ===
-              this.currentSelectedLayerOption &&
-            feature.properties.name
-              .toLowerCase()
-              .includes(this.currentSelectedTermOption.toLowerCase())
-          )
-            return true;
-        } else if (
-          this.currentSelectedLayerOption == "All" &&
-          this.currentSelectedCodeOption == "All"
-        ) {
-          console.log("Terms only");
-          if (!this.getFilteredFeatureList) return [];
-          return feature.properties.name
-            .toLowerCase()
-            .includes(this.searchInput.toLowerCase());
-        } else {
-          console.log("All filter");
-          if (
-            feature.properties.cou_name_en ===
-              this.currentSelectedLayerOption &&
-            feature.properties.feature_code ===
-              this.currentSelectedCodeOption &&
-            feature.properties.name
-              .toLowerCase()
-              .includes(this.currentSelectedTermOption.toLowerCase())
-          )
-            return true;
-        }
-      });
-      this.$store.dispatch("LOAD_FILTERED_FEATURES", filtered);
-      return filtered;
-    },
-
-    //  filterByTerm() {
-    //     if (!this.getFilteredFeatureList) return [];
-    //     this.$store.dispatch("CHANGE_CURRENT_TERM_FILTER", this.searchInput);
-
-    //     const filteredFeatureByTerm = this.getAllFeatures.filter((feature) => {
-    //       return feature.properties.name
-    //         .toLowerCase()
-    //         .includes(this.searchInput.toLowerCase());
-    //     });
-    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByTerm);
-    //   },
-
     updateTermFilter(e) {
       this.searchInput = e.target.value;
-      console.log(this.searchInput);
       this.$store.dispatch("CHANGE_CURRENT_TERM_FILTER", this.searchInput);
     },
-
-    // filterByLayer() {
-    //   if (this.currentSelectedLayerOption != "All") {
-    //     const filteredFeatureByLayer = this.getAllFeatures.filter(
-    //       (feature) =>
-    //         feature.properties.cou_name_en === this.currentSelectedLayerOption
-    //     );
-    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByLayer);
-    //     return filteredFeatureByLayer;
-    //   }
-    //   this.$store.dispatch("LOAD_FILTERED_FEATURES", this.getAllFeatures);
-    // },
-
-    // filterByCode() {
-    //   if (this.currentSelectedCodeOption != "All") {
-    //     const filteredFeatureByCode = this.getAllFeatures.filter(
-    //       (feature) =>
-    //         feature.properties.feature_code === this.currentSelectedCodeOption
-    //     );
-    //     this.$store.dispatch("LOAD_FILTERED_FEATURES", filteredFeatureByCode);
-    //     return filteredFeatureByCode;
-    //   }
-    //   this.$store.dispatch("LOAD_FILTERED_FEATURES", this.getAllFeatures);
-    // },
 
     toggleButtonList() {
       var btn = document.getElementById("collapsible");
